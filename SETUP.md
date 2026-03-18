@@ -100,25 +100,3 @@ Create React components in `src/` and use them in `App.tsx`.
 
 ### Building for Production
 The `npm run build` command bundles the entire application into `dist/`.
-
-## Troubleshooting
-
-### Port Already in Use
-If port 5173 is already in use, Vite will automatically use the next available port. Check the terminal output for the correct URL.
-
-### Changes Not Appearing
-- Make sure you've saved your files
-- Check the browser console for errors
-- Refresh the page (Ctrl+Shift+R for hard refresh)
-
-## Next Steps
-
-1. **Add data visualization**: Integrate a charting library (D3.js, Recharts, Chart.js)
-2. **Create React components**: Build reusable visualization components
-3. **Add static assets**: Store images and data files in `src/assets/`
-4. **Enhance styling**: Customize CSS and add responsive designs
-5. **Deploy**: Build and deploy the `dist/` folder to any static hosting service
-
----
-
-Happy coding! 🚀
