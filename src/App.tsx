@@ -1,5 +1,7 @@
 import React from 'react'
 import './index.css'
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 // Static data bundled with the frontend
 const sampleData = {
