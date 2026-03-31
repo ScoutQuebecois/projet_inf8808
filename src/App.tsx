@@ -1,44 +1,28 @@
-import React from 'react'
-import './index.css'
-import 'bootstrap/dist/css/bootstrap.min.css';
-
-
-// Static data bundled with the frontend
-const sampleData = {
-  message: 'Hello from the Data Visualization App!',
-  timestamp: new Date().toISOString(),
-  datasets: [
-    { name: 'Dataset 1', value: 100 },
-    { name: 'Dataset 2', value: 200 },
-    { name: 'Dataset 3', value: 150 }
-  ]
-}
+import React from 'react';
+import OlympicDashboard from './pages/LineChartPage'; // Import de ta nouvelle page
 
 const App: React.FC = () => {
-  const [data] = React.useState(sampleData)
+    return (
+        <div className="app" style={{ 
+            padding: '30px', 
+            backgroundColor: '#f4f7f6', 
+            minHeight: '100vh',
+            fontFamily: 'sans-serif' 
+        }}>
+            <header style={{ marginBottom: '30px' }}>
+                <h1 style={{ color: '#2c3e50', margin: 0 }}>Le Miroir Olympique</h1>
+                <p style={{ color: '#7f8c8d' }}>Analyse de l'évolution physique des athlètes à travers l'histoire.</p>
+            </header>
 
-  return (
-    <div className="app">
-      <header>
-        <h1>📊 Data Visualization</h1>
-      </header>
-      <main>
-        <div className="data-container">
-          <h2>Welcome to the Data Visualization App</h2>
-          <p>{data.message}</p>
-          <p><small>Loaded at: {data.timestamp}</small></p>
-          <div className="data-list">
-            <h3>Sample Data:</h3>
-            <ul>
-              {data.datasets.map((item, index) => (
-                <li key={index}>{item.name}: {item.value}</li>
-              ))}
-            </ul>
-          </div>
+            <main>
+                <OlympicDashboard />
+            </main>
+
+            <footer style={{ marginTop: '40px', textAlign: 'center', color: '#bdc3c7', fontSize: '0.9em' }}>
+                Projet de Visualisation de Données - 2026
+            </footer>
         </div>
-      </main>
-    </div>
-  )
-}
+    );
+};
 
-export default App
+export default App;
