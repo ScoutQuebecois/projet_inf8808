@@ -7,6 +7,7 @@ import { Container, Spinner } from "react-bootstrap";
 const HeightBoxPlot = ({ userNumber, userSport, type, sexe }: { userNumber: number | null; userSport: string | null | undefined; type: "height" | "weight" | "age"; sexe: string }) => {
     const [data, setData] = useState<Athlete[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const svgRef = useRef<SVGSVGElement | null>(null);
     const tooltipRef = useRef<d3.Selection<HTMLDivElement, unknown, HTMLElement, any> | null>(null);
     
@@ -46,14 +47,20 @@ const HeightBoxPlot = ({ userNumber, userSport, type, sexe }: { userNumber: numb
 
     useEffect(() => {
         if (!data.length) return;
-        const filtered = userSport ? data.filter((d) => d.Medal === "Gold" && d.Sport === userSport && (sexe === '' || d.Sex === sexe)) : data;
+        setError(null);
+        const svg = d3.select(svgRef.current);
+        svg.selectAll("*").remove(); 
 
+        const filtered = userSport ? data.filter((d) => d.Medal === "Gold" && d.Sport === userSport && (sexe === '' || d.Sex === sexe)) : data;
         const dataToShow = filtered
             .map((d) => type === "height" ? d.Height : type === "weight" ? d.Weight : d.Age)
             .filter((h): h is number => h !== null)
             .sort(d3.ascending);
 
-        if (!dataToShow.length) return;
+        if (!dataToShow.length) {
+            setError("Aucune donnée disponible pour les critères sélectionnés.");
+            return;
+        } 
 
         const q1 = d3.quantile(dataToShow, 0.25)!;
         const median = d3.quantile(dataToShow, 0.5)!;
@@ -66,9 +73,7 @@ const HeightBoxPlot = ({ userNumber, userSport, type, sexe }: { userNumber: numb
         const height = 225;
         const margin = { top: 0, right: 40, bottom: 40, left: 60 };
 
-        const svg = d3.select(svgRef.current);
 
-        svg.selectAll("*").remove(); 
 
          const xScale = d3
             .scaleLinear()
@@ -206,6 +211,17 @@ const HeightBoxPlot = ({ userNumber, userSport, type, sexe }: { userNumber: numb
         svg
             .append("text")
             .attr("x", (width - margin.right) / 2)
+            .attr("y", margin.top + 20) 
+            .attr("text-anchor", "middle")
+            .style("font-size", "14px")
+            .style("fill", "black")
+            .text('Nombre d\'athlètes considérés : ' + dataToShow.length);
+        
+            
+        
+        svg
+            .append("text")
+            .attr("x", (width - margin.right) / 2)
             .attr("y", centerY + 110) 
             .attr("text-anchor", "middle")
             .style("font-size", "14px")
@@ -218,6 +234,7 @@ const HeightBoxPlot = ({ userNumber, userSport, type, sexe }: { userNumber: numb
         <>  
         <Container className="text-center">
             {loading && <Spinner animation="border" variant="primary" />}
+            {error && <p className="text-danger">{error}</p>}
             <svg
                 ref={svgRef}
                 width={400}
