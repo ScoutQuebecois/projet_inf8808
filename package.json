@@ -1,7 +1,7 @@
 {
   "name": "datavis-project",
-  "version": "0.0.1",
-  "homepage": "https://scoutquebecois.github.io/",
+  "version": "0.0.2",
+  "homepage": "https://scoutquebecois.github.io/projet_inf8808/",
   "description": "React + TypeScript static frontend for data visualization",
   "private": true,
   "type": "module",
