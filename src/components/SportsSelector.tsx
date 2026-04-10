@@ -5,6 +5,7 @@ interface Props {
     selectedSports: string[];
     onAdd: (sport: string) => void;
     onRemove: (sport: string) => void;
+    
 }
 
 const SportSelector: React.FC<Props> = ({ allSports, selectedSports, onAdd, onRemove }) => {

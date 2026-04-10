@@ -4,7 +4,7 @@ import { Athlete } from "../types/Athlete";
 import { Container, Spinner } from "react-bootstrap";
 
 
-const HeightBoxPlot = ({ userNumber, userSport, type, sexe }: { userNumber: number | null; userSport: string | null | undefined; type: "height" | "weight" | "age"; sexe: string }) => {
+const BoxPlot = ({ userNumber, userSport, type, sexe }: { userNumber: number | null; userSport: string | null | undefined; type: "height" | "weight" | "age"; sexe: string }) => {
     const [data, setData] = useState<Athlete[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -262,4 +262,4 @@ const HeightBoxPlot = ({ userNumber, userSport, type, sexe }: { userNumber: numb
     )
 };
 
-export default HeightBoxPlot;
+export default BoxPlot;

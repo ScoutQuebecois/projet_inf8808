@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import * as d3 from 'd3';
-import LineChart from '../components/LineChart';
-import SportSelector from '../components/SportsSelector';
+import LineChart from './LineChart';
+import SportSelector from './SportsSelector';
 import { Athlete, MetricType } from '../types/Athlete';
 import Select from "react-select";
 import { Col, Container, Row, Spinner } from 'react-bootstrap';
@@ -22,19 +22,22 @@ const OlympicDashboard: React.FC = () => {
                 Height: (d.Height && d.Height !== "NA") ? parseFloat(d.Height) : null,
                 Weight: (d.Weight && d.Weight !== "NA") ? parseFloat(d.Weight) : null,
                 Sex: d.Sex,
-                Sport: d.Sport
+                Sport: d.Sport,
+                Medal: d.Medal,
+                Season: d.Season
             })) as unknown as Athlete[];
             
 
             setData(cleaned);
             setLoading(false);
-        });
+            });
     }, []);
 
     const sportsList = useMemo(() => {
         return Array.from(new Set(data.map(d => d.Sport))).sort();
     }, [data]);
 
+    
     const addSport = (sport: string) => {
         if (!selectedSports.includes(sport)) {
             setSelectedSports([...selectedSports, sport]);
@@ -62,6 +65,7 @@ const OlympicDashboard: React.FC = () => {
     ];
 
     const ages = [{ value: "All", label: "Tous" }, { value: "M", label: "Hommes" }, { value: "F", label: "Femmes" }];
+    const seasons = [{ value: "All", label: "Tous" }, { value: "Summer", label: "Été" }, { value: "Winter", label: "Hiver" }];
 
     return (
         <div className="data-container ">
@@ -86,8 +90,7 @@ const OlympicDashboard: React.FC = () => {
                         placeholder="Choisir un sexe"
                         onChange={(option) => setSelectedSex(option ? option.value : "All")}
                         />
-                    </Col>
-                    
+                    </Col>                    
                 </Row>
                 <br/>
                 <Row>
@@ -102,8 +105,7 @@ const OlympicDashboard: React.FC = () => {
                 
             </Container>
         
-           
-
+        
             <LineChart 
                 data={data} 
                 metric={metric} 
