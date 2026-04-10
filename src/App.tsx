@@ -5,6 +5,7 @@ const Home = React.lazy(() => import('./pages/Home'))
 const User = React.lazy(() => import('./pages/User'))
 import HeaderBar from './components/HeaderBar';
 import { Routes, Route } from 'react-router-dom';
+import OlympicDashboardPage from './pages/OlympicDashboardPage';
 
 
 const App: React.FC = () => {
@@ -16,6 +17,7 @@ const App: React.FC = () => {
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/olympic" element={<OlympicDashboardPage />} />
           <Route path="/user" element={<User />} />
         </Routes>
       </main>

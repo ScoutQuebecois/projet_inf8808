@@ -234,7 +234,23 @@ const HeightBoxPlot = ({ userNumber, userSport, type, sexe }: { userNumber: numb
         <>  
         <Container className="text-center">
             {loading && <Spinner animation="border" variant="primary" />}
-            {error && <p className="text-danger">{error}</p>}
+            {error && <div style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    padding: '15px 25px',
+                    border: '2px solid #ff4d4f',
+                    borderRadius: '8px',
+                    color: '#ff4d4f',
+                    fontWeight: 'bold',
+                    zIndex: 10,
+                    textAlign: 'center',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                }}>
+                    ⚠️ Aucune donnée disponible <br/> 
+                    <span style={{ fontSize: '0.8em', fontWeight: 'normal', color: '#666' }}>
+                       {error}
+                    </span>
+                </div>
+            }
             <svg
                 ref={svgRef}
                 width={400}

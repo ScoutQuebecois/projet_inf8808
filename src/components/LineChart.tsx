@@ -19,7 +19,7 @@ const LineChart: React.FC<Props> = ({
     const [hasData, setHasData] = useState<boolean>(true);
 
     const margin = { top: 40, right: 120, bottom: 60, left: 60 };
-    const width = 850 - margin.left - margin.right;
+    const width = 1050 - margin.left - margin.right;
     const height = 450 - margin.top - margin.bottom;
 
     useEffect(() => {
