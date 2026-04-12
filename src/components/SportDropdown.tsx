@@ -19,6 +19,7 @@ const SportDropdown = ({onChange} : SportDropdownProps) => {
         Height: d.Height && d.Height !== "NA" ? parseFloat(d.Height) : null,
         Weight: d.Weight && d.Weight !== "NA" ? parseFloat(d.Weight) : null,
         Sex: d.Sex,
+        Season: d.Season,
         Sport: d.Sport,
       })) as unknown as Athlete[];
 

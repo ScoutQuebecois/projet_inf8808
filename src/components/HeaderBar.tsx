@@ -12,8 +12,7 @@ const HeaderBar = () => {
             </Container>
         </Navbar.Brand>
         <Nav className="me-auto">
-            <Nav.Link className="pe-auto" as={NavLink} to="/">Home</Nav.Link>
-            <Nav.Link className="pe-auto" as={NavLink} to="/sports">Évolution par sport</Nav.Link>
+            <Nav.Link className="pe-auto" as={NavLink} to="/sports">Évolution des athlètes</Nav.Link>
             <Nav.Link className="pe-auto" as={NavLink} to="/pays">Comparaison par pays</Nav.Link>
             <Nav.Link className="pe-auto" as={NavLink} to="/user">Comment je me compare?</Nav.Link>
         </Nav>
