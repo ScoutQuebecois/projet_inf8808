@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { Athlete } from "../types/Athlete";
 
 interface Props {
   data: Athlete[];
-  selectedSport: string; // single sport
+  selectedSport: string;
   selectedCountry?: string | null;
   nocRegions: Record<string, string>;
 }
@@ -16,15 +16,19 @@ const CountryAvgScatter: React.FC<Props> = ({
   nocRegions,
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [athletes, setAthletes] = useState<Athlete[]>([]);
 
   useEffect(() => {
     if (!data.length || !selectedSport) return;
+    if (!svgRef.current) return;
 
     const filtered = data.filter(
-      (d) => d.Sport === selectedSport && d.Height && d.Weight,
+      (d) => d.Sport === selectedSport && d.Height != null && d.Weight != null,
     );
-    setAthletes(filtered);
+
+    const svg = d3.select(svgRef.current);
+    svg.selectAll("*").remove();
+
+    if (!filtered.length) return;
 
     const countryAverages = d3
       .rollups(
@@ -40,21 +44,10 @@ const CountryAvgScatter: React.FC<Props> = ({
         ...values,
       }));
 
-    const margin = {
-      top: 40,
-      right: 40,
-      bottom: 60,
-      left: 70,
-    };
+    const margin = { top: 40, right: 40, bottom: 60, left: 70 };
 
     const width = 500;
     const height = 350;
-
-    if (!svgRef.current) return;
-
-    const svg = d3.select(svgRef.current);
-
-    svg.selectAll("*").remove();
 
     svg.attr("width", width).attr("height", height);
 
@@ -65,6 +58,8 @@ const CountryAvgScatter: React.FC<Props> = ({
     const g = svg
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // scales
 
     const x = d3
       .scaleLinear()
@@ -82,6 +77,7 @@ const CountryAvgScatter: React.FC<Props> = ({
       .nice()
       .range([innerHeight, 0]);
 
+
     const allCountries = Array.from(new Set(data.map((d) => d.NOC)));
 
     const color = d3
@@ -95,6 +91,7 @@ const CountryAvgScatter: React.FC<Props> = ({
         }),
       );
 
+
     const tooltip = d3
       .select("body")
       .append("div")
@@ -107,6 +104,8 @@ const CountryAvgScatter: React.FC<Props> = ({
       .style("pointer-events", "none")
       .style("opacity", 0);
 
+    // title
+
     svg
       .append("text")
       .attr("x", width / 2)
@@ -114,24 +113,25 @@ const CountryAvgScatter: React.FC<Props> = ({
       .attr("text-anchor", "middle")
       .style("font-size", "18px")
       .style("font-weight", "bold")
-      .text(
-        `Taille et Poids moyens — ${selectedSport} (${data.filter((d) => d.Sport == selectedSport).map((d) => d.Season)[0]})`,
-      );
+      .text(`Taille et Poids moyens — ${selectedSport}`);
 
-    g.selectAll("circle")
+    // draw points
+
+    const circles = g.selectAll("circle")
       .data(countryAverages)
       .enter()
       .append("circle")
       .attr("cx", (d) => x(d.avgHeight))
       .attr("cy", (d) => y(d.avgWeight))
-      .attr("r", 5)
+      .attr("r", (d) =>
+        nocRegions[d.NOC] === selectedCountry ? 8 : 4)
       .attr("fill", (d) =>
-        nocRegions[d.NOC] === selectedCountry ? "black" : color(d.NOC),
+        nocRegions[d.NOC] === selectedCountry ? "white" : color(d.NOC),
       )
-      .attr("stroke", "black")
-      .attr("stroke-width", (d) =>
-        nocRegions[d.NOC] === selectedCountry ? 2 : 0.6,
-      )
+      .attr("stroke", (d) =>
+        nocRegions[d.NOC] === selectedCountry ? "red" : "black")
+      .attr("stroke-width", 0.6)
+
       .on("mouseover", function (event, d) {
         tooltip.style("opacity", 1).html(`
             <strong>${nocRegions[d.NOC]}</strong><br/>
@@ -139,29 +139,39 @@ const CountryAvgScatter: React.FC<Props> = ({
             Poids: ${d.avgWeight.toFixed(1)} kg
           `);
 
-        d3.select(this).attr("stroke-width", 2).attr("fill", "black");
+        d3.select(this).attr("stroke-width", 2).attr("fill", "white");
       })
+
       .on("mousemove", function (event) {
         tooltip
           .style("left", event.pageX + 12 + "px")
           .style("top", event.pageY - 28 + "px");
       })
+
       .on("mouseleave", function (event, d) {
         tooltip.style("opacity", 0);
 
         d3.select(this)
-          .attr("stroke-width", d.NOC === selectedCountry ? 2 : 0.6)
+          .attr("stroke-width", 0.6)
           .attr(
             "fill",
-            nocRegions[d.NOC] === selectedCountry ? "black" : color(d.NOC),
+            nocRegions[d.NOC] === selectedCountry ? "white" : color(d.NOC),
           );
       });
+    
+    circles
+      .filter(d => nocRegions[d.NOC] === selectedCountry)
+      .raise();
+
+    // axes
 
     g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(x));
 
     g.append("g").call(d3.axisLeft(y));
+
+    // labels
 
     svg
       .append("text")
@@ -177,35 +187,47 @@ const CountryAvgScatter: React.FC<Props> = ({
       .attr("y", 20)
       .attr("text-anchor", "middle")
       .text("Poids moyen (kg)");
-  }, [data, selectedSport, selectedCountry]);
 
-  return (
-    <>
-      {athletes.length == 0 && <div 
-            style={{
-              backgroundColor: "rgba(255, 255, 255, 0.9)",
-              padding: "15px 25px",
-              border: "2px solid #ff4d4f",
-              borderRadius: "8px",
-              color: "#ff4d4f",
-              fontWeight: "bold",
-              zIndex: 10,
-              textAlign: "center",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-            }}
-          >
-            ⚠️ Aucune donnée disponible de taille et poids moyen<br />
-            <span
-              style={{
-                fontSize: "0.8em",
-                fontWeight: "normal",
-                color: "#666",
-              }}
-            > Aucune donnée significative pour {selectedSport}</span>
-          </div>}
-      {athletes.length > 0 && <svg ref={svgRef}></svg>}
-    </>
-  )
+    return () => {
+      tooltip.remove();
+    };
+  }, [data, selectedSport, selectedCountry, nocRegions]);
+
+  // fallback message
+
+  const filtered = data.filter(
+    (d) => d.Sport === selectedSport && d.Height != null && d.Weight != null,
+  );
+
+  if (!filtered.length) {
+    return (
+      <div
+        style={{
+          backgroundColor: "rgba(255,255,255,0.9)",
+          padding: "15px 25px",
+          border: "2px solid #ff4d4f",
+          borderRadius: "8px",
+          color: "#ff4d4f",
+          fontWeight: "bold",
+          textAlign: "center",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+        }}
+      >
+        ⚠️ Aucune donnée disponible
+        <br />
+        <span
+          style={{
+            fontSize: "0.8em",
+            color: "#666",
+          }}
+        >
+          Aucune donnée significative pour {selectedSport}
+        </span>
+      </div>
+    );
+  }
+
+  return <svg ref={svgRef}></svg>;
 };
 
 export default CountryAvgScatter;

@@ -253,7 +253,7 @@ const MedalHeatmap: React.FC<Props> = ({ data, selectedSports, nocRegions, scrol
     }
   
     
-  }, [highlightedNation]);
+  }, [highlightedNation, selectedSports, scrollCountry]);
 
   useEffect(() => {
 
