@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { Athlete } from "../types/Athlete";
 import { Container, Spinner } from "react-bootstrap";
+import { loadAthleteData } from "../utils/dataLoader";
 
 
 const HeightBoxPlot = ({ userNumber, userSport, type, sexe }: { userNumber: number | null; userSport: string | null | undefined; type: "height" | "weight" | "age"; sexe: string }) => {
@@ -10,19 +11,9 @@ const HeightBoxPlot = ({ userNumber, userSport, type, sexe }: { userNumber: numb
     const [error, setError] = useState<string | null>(null);
     const svgRef = useRef<SVGSVGElement | null>(null);
     const tooltipRef = useRef<d3.Selection<HTMLDivElement, unknown, HTMLElement, any> | null>(null);
-    
+
     useEffect(() => {
-        d3.csv("/assets/athlete_events.csv").then((res) => {
-            const cleaned = res.map((d: any) => ({
-                ...d,
-                Year: d.Year ? parseInt(d.Year) : 0,
-                Age: (d.Age && d.Age !== "NA") ? parseFloat(d.Age) : null,
-                Height: (d.Height && d.Height !== "NA") ? parseFloat(d.Height) : null,
-                Weight: (d.Weight && d.Weight !== "NA") ? parseFloat(d.Weight) : null,
-                Sex: d.Sex,
-                Sport: d.Sport
-            })) as unknown as Athlete[];
-            
+        loadAthleteData().then((cleaned) => {
             setData(cleaned);
             setLoading(false);
         });

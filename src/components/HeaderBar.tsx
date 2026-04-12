@@ -4,17 +4,22 @@ import { Container, Nav } from "react-bootstrap";
 
 const HeaderBar = () => {
     return (
-    <Navbar bg="dark" data-bs-theme="dark" >
+    <Navbar bg="dark" data-bs-theme="dark" expand="lg">
       <Container fluid>
-        <Navbar.Brand href="/" >
-            <Container >
-              <h1>Le mirror Olympique</h1>
+        <Navbar.Brand as={NavLink} to="/">
+            <Container>
+              <h1>Le miroir Olympique</h1>
             </Container>
         </Navbar.Brand>
-        <Nav className="me-auto">
-            <Nav.Link as={NavLink} to="/">Home</Nav.Link>
-            <Nav.Link as={NavLink} to="/user">Comment je me compare?</Nav.Link>
-        </Nav>
+        <Navbar.Toggle aria-controls="main-nav" />
+        <Navbar.Collapse id="main-nav">
+          <Nav className="me-auto">
+              <Nav.Link as={NavLink} to="/">Evolution</Nav.Link>
+              <Nav.Link as={NavLink} to="/nations">Nations</Nav.Link>
+              <Nav.Link as={NavLink} to="/user">Me comparer</Nav.Link>
+              <Nav.Link as={NavLink} to="/map">Carte mondiale</Nav.Link>
+          </Nav>
+        </Navbar.Collapse>
       </Container>
     </Navbar>
   );

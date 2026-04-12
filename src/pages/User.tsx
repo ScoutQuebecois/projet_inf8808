@@ -1,8 +1,9 @@
 import { Row, Col, Container, Form, ButtonGroup, ToggleButton } from "react-bootstrap"
 import BoxPlot from "../components/BoxPlot";
-import SportDropdown from "../components/SportDropdown";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Option } from "../types/Options";
+import { loadAthleteData } from "../utils/dataLoader";
+import Select from "react-select";
 
 const radios = [
     { name: 'Tous' , value : ''},
@@ -16,24 +17,52 @@ const User = () => {
     const [ userHeight, setUserHeight] = useState<number | null>(null);
     const [ userWeight, setUserWeight] = useState<number | null>(null);
     const [ userAge, setUserAge] = useState<number | null>(null);
+    const [sportSearch, setSportSearch] = useState("");
+    const [allSports, setAllSports] = useState<string[]>([]);
+
+    useEffect(() => {
+        loadAthleteData().then((cleaned) => {
+            const sports = [...new Set(cleaned.map((d) => d.Sport))].sort();
+            setAllSports(sports);
+        });
+    }, []);
+
+    const filteredSports = useMemo(() => {
+        return allSports.filter((s) => s.toLowerCase().includes(sportSearch.toLowerCase()));
+    }, [allSports, sportSearch]);
+
     return (
         <>
             <Container>
                 <div className="data-container text-center">
-                    <h2>Quelles sont vos performances par rapport aux champions du passé?</h2>
-                    <h6>Entrez vos données et comparez-vous aux médaillés d'or de votre sport!</h6>
+                    <h2>Quelles sont vos performances par rapport aux champions du passe?</h2>
+                    <h6>Entrez vos donnees et comparez-vous aux medailles d'or de votre sport!</h6>
                 </div>
             </Container>
             <br />
             <Container>
                 <Row>
                     <Col lg={9}>
-                        
+
                         <div className="data-container ">
                             <Container>
                                 <Row>
                                     <Col lg={8}>
-                                        <SportDropdown onChange={setSelectedOption} />
+                                        <Form.Control
+                                            size="sm"
+                                            type="text"
+                                            placeholder="Rechercher un sport..."
+                                            value={sportSearch}
+                                            onChange={(e) => setSportSearch(e.target.value)}
+                                            className="mb-1"
+                                        />
+                                        <Select
+                                            options={filteredSports.map((sport) => ({ value: sport, label: sport }))}
+                                            placeholder="Choisir un sport"
+                                            isSearchable={true}
+                                            onChange={setSelectedOption}
+                                            value={selectedOption}
+                                        />
                                     </Col>
                                     <Col lg={4}>
                                         <ButtonGroup>
@@ -70,9 +99,9 @@ const User = () => {
                                         </Col>
                                     </Row>
                                     <br/>
-                                    <Row>       
+                                    <Row>
                                         <Col lg={6} className="align-self-center">
-                                            <h5 className="text-center">Âge</h5>
+                                            <h5 className="text-center">Age</h5>
                                             <BoxPlot userNumber={userAge} userSport={selectedOption.value} type="age" sexe={radioValue} />
                                         </Col>
                                     </Row>
@@ -82,22 +111,22 @@ const User = () => {
                             }
 
                         </div>
-                
+
                     </Col>
                     <Col lg={3}>
                         <div className="data-container">
                             <Form noValidate>
-                                <Form.Group className="mb-3" controlId="formBasicEmail">
+                                <Form.Group className="mb-3" controlId="formWeight">
                                     <Form.Label>Poids (kg)</Form.Label>
                                     <Form.Control type="number" placeholder="" onChange={(e) => setUserWeight(parseFloat(e.target.value) || null)}/>
                                 </Form.Group>
 
-                                <Form.Group className="mb-3" controlId="formBasicPassword">
-                                    <Form.Label>Âge</Form.Label>
+                                <Form.Group className="mb-3" controlId="formAge">
+                                    <Form.Label>Age</Form.Label>
                                     <Form.Control type="number" placeholder="" onChange={(e) => setUserAge(parseInt(e.target.value) || null)} />
                                 </Form.Group>
 
-                                <Form.Group className="mb-3" controlId="formBasicPassword">
+                                <Form.Group className="mb-3" controlId="formHeight">
                                     <Form.Label>Taille (cm)</Form.Label>
                                     <Form.Control type="number" placeholder="" onChange={(e) => setUserHeight(parseFloat(e.target.value) || null)} />
                                 </Form.Group>
@@ -108,9 +137,9 @@ const User = () => {
                     </Col>
                 </Row>
             </Container>
-            
+
         </>
-            
+
     )
 }
 

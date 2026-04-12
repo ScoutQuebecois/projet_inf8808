@@ -17,27 +17,26 @@ body {
 
 header {
   background-color: #282c34;
-  padding: 20px;
   color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 header h1 {
   margin: 0;
-  font-size: 28px;
+  font-size: 24px;
 }
 
 main {
   flex: 1;
-  padding: 40px 20px;
-  max-width: 1200px;
+  padding: 30px 20px;
+  max-width: 1400px;
   margin: 0 auto;
   width: 100%;
 }
 
 .data-container {
   background-color: white;
-  padding: 30px;
+  padding: 25px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
@@ -45,6 +44,7 @@ main {
 .data-container h2 {
   margin-top: 0;
   color: #282c34;
+  font-size: 22px;
 }
 
 .data-container h3 {
@@ -52,25 +52,30 @@ main {
   margin-top: 20px;
 }
 
+.data-container h5 {
+  color: #282c34;
+  margin-bottom: 15px;
+}
+
 .data-container p {
   color: #666;
 }
 
-.data-list ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 10px 0;
+svg {
+  max-width: 100%;
+  height: auto;
 }
 
-.data-list li {
-  padding: 10px;
-  margin: 5px 0;
-  background-color: #f0f0f0;
-  border-left: 4px solid #282c34;
-  border-radius: 4px;
+.navbar .nav-link.active {
+  font-weight: bold;
+  border-bottom: 2px solid #fff;
 }
 
-small {
-  color: #999;
-  font-style: italic;
+.form-check {
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.form-check-label {
+  font-size: 13px;
 }
