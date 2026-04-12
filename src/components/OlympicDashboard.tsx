@@ -5,6 +5,7 @@ import SportSelector from './SportsSelector';
 import { Athlete, MetricType } from '../types/Athlete';
 import Select from "react-select";
 import { Col, Container, Row, Spinner } from 'react-bootstrap';
+import MedalHeatmap from './Heatmap';
 
 const OlympicDashboard: React.FC = () => {
     const [data, setData] = useState<Athlete[]>([]);
@@ -112,6 +113,7 @@ const OlympicDashboard: React.FC = () => {
                 selectedSports={selectedSports} 
                 selectedSex={selectedSex}
             />
+
         </div>
     );
 };

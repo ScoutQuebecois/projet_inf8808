@@ -38,7 +38,7 @@ const SportSelector: React.FC<Props> = ({ allSports, selectedSports, onAdd, onRe
     }, [allSports, selectedSports, searchTerm]);
 
     return (
-        <div ref={containerRef} style={{ width: '100%', maxWidth: '500px', marginBottom: '20px', position: 'relative' }}>
+        <div ref={containerRef} style={{ width: '100%', maxWidth: '500px', position: 'relative' }}>
             <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>
                 Sports à comparer :
             </label>

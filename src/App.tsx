@@ -6,6 +6,7 @@ const User = React.lazy(() => import('./pages/User'))
 import HeaderBar from './components/HeaderBar';
 import { Routes, Route } from 'react-router-dom';
 import OlympicDashboardPage from './pages/OlympicDashboardPage';
+import HeatMapPage from './pages/HeatMapPage';
 
 
 const App: React.FC = () => {
@@ -17,8 +18,9 @@ const App: React.FC = () => {
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/olympic" element={<OlympicDashboardPage />} />
+          <Route path="/sports" element={<OlympicDashboardPage />} />
           <Route path="/user" element={<User />} />
+          <Route path="/pays" element={<HeatMapPage />} />
         </Routes>
       </main>
     </div>
