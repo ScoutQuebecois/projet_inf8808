@@ -13,8 +13,8 @@ const Nations = () => {
   const [selectedSport, setSelectedSport] = useState<Option | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<Option | null>(null);
   const [sexFilter, setSexFilter] = useState<string>("");
-  const [sportSearch, setSportSearch] = useState("");
-  const [countrySearch, setCountrySearch] = useState("");
+  const [sportSearch] = useState("");
+  const [countrySearch] = useState("");
 
   useEffect(() => {
     loadAthleteData().then((cleaned) => {

@@ -14,7 +14,7 @@ const MapView = () => {
   const [loading, setLoading] = useState(true);
   const [selectedSport, setSelectedSport] = useState<Option | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
-  const [sportSearch, setSportSearch] = useState("");
+  const [sportSearch] = useState("");
   const [selectedCountryName, setSelectedCountryName] = useState<string | null>(null);
 
   useEffect(() => {

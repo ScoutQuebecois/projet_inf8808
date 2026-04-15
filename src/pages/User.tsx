@@ -17,7 +17,7 @@ const User = () => {
     const [ userHeight, setUserHeight] = useState<number | null>(null);
     const [ userWeight, setUserWeight] = useState<number | null>(null);
     const [ userAge, setUserAge] = useState<number | null>(null);
-    const [sportSearch, setSportSearch] = useState("");
+    const [sportSearch] = useState("");
     const [allSports, setAllSports] = useState<string[]>([]);
 
     useEffect(() => {
