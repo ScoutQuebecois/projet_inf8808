@@ -112,7 +112,7 @@ const ScatterPlot = ({ data, highlightSport, highlightCountry }: ScatterPlotProp
       .attr("text-anchor", "middle")
       .style("font-size", "15px")
       .style("font-weight", "bold")
-      .text("Profil physique des medailles par nation et sport");
+      .text("Profil physique des médaillés par nation et par sport");
 
     const sorted = [...data].sort((a, b) => b.medalCount - a.medalCount);
 
@@ -154,8 +154,8 @@ const ScatterPlot = ({ data, highlightSport, highlightCountry }: ScatterPlotProp
             `<strong>${d.country}</strong> — ${d.sport}<br/>
             Taille moy.: ${d.avgHeight.toFixed(1)} cm<br/>
             Poids moy.: ${d.avgWeight.toFixed(1)} kg<br/>
-            Age moy.: ${d.avgAge.toFixed(1)} ans<br/>
-            Medailles: ${d.medalCount}`
+            Âge moy.: ${d.avgAge.toFixed(1)} ans<br/>
+            Médaillés: ${d.medalCount}`
           )
           .style("left", `${event.pageX + 14}px`)
           .style("top", `${event.pageY - 30}px`);
@@ -187,7 +187,7 @@ const ScatterPlot = ({ data, highlightSport, highlightCountry }: ScatterPlotProp
       .attr("y", -rScale(medalExtent[1]) - 10)
       .style("font-size", "10px")
       .style("font-weight", "bold")
-      .text("Medailles");
+      .text("Médaillés");
 
     legendSizes.forEach((size) => {
       const r = rScale(size);

@@ -88,7 +88,7 @@ const Nations = () => {
     return (
       <Container className="text-center mt-5">
         <Spinner animation="border" variant="primary" />
-        <p className="mt-2">Chargement des donnees...</p>
+        <p className="mt-2">Chargement des données...</p>
       </Container>
     );
   }
@@ -96,10 +96,10 @@ const Nations = () => {
   return (
     <Container fluid className="px-4">
       <div className="data-container text-center mb-4">
-        <h2>Profil physique des medailles par nation</h2>
+        <h2>Profil physique des médaillés par nation</h2>
         <p className="text-muted">
-          Comparez les caracteristiques physiques moyennes des medailles selon les nations et les sports.
-          La taille des bulles est proportionnelle au nombre de medailles. Les bulles bleues indiquent le sport dominant d'une nation.
+          Comparez les caractéristiques physiques moyennes des médaillés selon les nations et les sports.
+          La taille des bulles est proportionnelle au nombre de médaillés. Les bulles bleues indiquent le sport dominant d'une nation.
         </p>
       </div>
 
@@ -171,7 +171,7 @@ const Nations = () => {
                 <div style={{ width: 12, height: 12, backgroundColor: "#bbb", borderRadius: "50%", marginRight: 6 }} />
                 Autre sport
               </div>
-              <p className="mt-2 mb-0">La taille du cercle represente le nombre de medailles obtenues.</p>
+              <p className="mt-2 mb-0">La taille du cercle represente le nombre de médailles obtenues.</p>
             </small>
           </div>
         </Col>
@@ -179,7 +179,7 @@ const Nations = () => {
         <Col lg={9}>
           <div className="data-container text-center">
             {bubbleData.length === 0 ? (
-              <p className="text-muted mt-4">Aucune donnee disponible pour les criteres selectionnes.</p>
+              <p className="text-muted mt-4">Aucune donnée disponible pour les critères sélectionnés.</p>
             ) : (
               <ScatterPlot
                 data={bubbleData}

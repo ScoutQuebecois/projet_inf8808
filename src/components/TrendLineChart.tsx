@@ -79,14 +79,14 @@ const TrendLineChart = ({ data, country, sport }: TrendLineChartProps) => {
       .attr("x", -innerH / 2)
       .attr("text-anchor", "middle")
       .style("font-size", "12px")
-      .text("IMC ajuste par l'age");
+      .text("IMC ajusté par l'âge");
 
     g.append("text")
       .attr("x", innerW / 2)
       .attr("y", innerH + 40)
       .attr("text-anchor", "middle")
       .style("font-size", "12px")
-      .text("Annee des Jeux Olympiques");
+      .text("Année des Jeux Olympiques");
 
     g.append("text")
       .attr("x", innerW / 2)
@@ -94,7 +94,7 @@ const TrendLineChart = ({ data, country, sport }: TrendLineChartProps) => {
       .attr("text-anchor", "middle")
       .style("font-size", "14px")
       .style("font-weight", "bold")
-      .text(`Evolution de l'IMC ajuste — ${country} — ${sport}`);
+      .text(`Évolution de l'IMC ajusté — ${country} — ${sport}`);
 
     g.append("text")
       .attr("x", innerW / 2)
@@ -102,7 +102,7 @@ const TrendLineChart = ({ data, country, sport }: TrendLineChartProps) => {
       .attr("text-anchor", "middle")
       .style("font-size", "11px")
       .style("fill", "#666")
-      .text("IMC ajuste = IMC x (Age / 25)");
+      .text("IMC ajusté = IMC x (âge / 25)");
 
     const line = d3
       .line<YearlyIMC>()
@@ -129,7 +129,7 @@ const TrendLineChart = ({ data, country, sport }: TrendLineChartProps) => {
         d3.select(this).attr("r", 6);
         tooltipRef.current
           ?.style("opacity", 1)
-          .html(`<strong>${d.year}</strong><br/>IMC ajuste: ${d.imc.toFixed(2)}`)
+          .html(`<strong>${d.year}</strong><br/>IMC ajusté: ${d.imc.toFixed(2)}`)
           .style("left", `${event.pageX + 12}px`)
           .style("top", `${event.pageY - 28}px`);
       })
@@ -172,7 +172,7 @@ const TrendLineChart = ({ data, country, sport }: TrendLineChartProps) => {
         .append("line")
         .attr("x1", 0).attr("x2", 20).attr("y1", 0).attr("y2", 0)
         .attr("stroke", "#4a90d9").attr("stroke-width", 2.5);
-      legendG.append("text").attr("x", 25).attr("y", 4).text("IMC ajuste par l'age").style("font-size", "10px");
+      legendG.append("text").attr("x", 25).attr("y", 4).text("IMC ajusté par l'âge").style("font-size", "10px");
 
       legendG
         .append("line")

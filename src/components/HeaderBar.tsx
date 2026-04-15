@@ -8,13 +8,13 @@ const HeaderBar = () => {
       <Container fluid>
         <Navbar.Brand as={NavLink} to="/">
             <Container>
-              <h1>Le miroir Olympique</h1>
+              <h1>Le Miroir Olympique</h1>
             </Container>
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="main-nav" />
         <Navbar.Collapse id="main-nav">
           <Nav className="me-auto">
-              <Nav.Link as={NavLink} to="/">Evolution</Nav.Link>
+              <Nav.Link as={NavLink} to="/">Évolution</Nav.Link>
               <Nav.Link as={NavLink} to="/nations">Nations</Nav.Link>
               <Nav.Link as={NavLink} to="/user">Me comparer</Nav.Link>
               <Nav.Link as={NavLink} to="/map">Carte mondiale</Nav.Link>

@@ -177,7 +177,7 @@ const ChoroplethMap = ({ data, onCountryClick, selectedCountry, sportName }: Cho
           tooltipRef.current
             ?.style("opacity", 1)
             .html(
-              `<strong>${entry.country}</strong><br/>Variation IMC ajuste: ${entry.delta > 0 ? "+" : ""}${entry.delta.toFixed(2)}`
+              `<strong>${entry.country}</strong><br/>Variation de l'IMC ajusté: ${entry.delta > 0 ? "+" : ""}${entry.delta.toFixed(2)}`
             )
             .style("left", `${event.pageX + 14}px`)
             .style("top", `${event.pageY - 30}px`);
@@ -249,7 +249,7 @@ const ChoroplethMap = ({ data, onCountryClick, selectedCountry, sportName }: Cho
         .attr("y", legendY - 5)
         .attr("text-anchor", "middle")
         .style("font-size", "11px")
-        .text("Δ IMC ajuste");
+        .text("Variation de l'IMC ajusté");
 
       svg
         .append("text")
@@ -258,7 +258,7 @@ const ChoroplethMap = ({ data, onCountryClick, selectedCountry, sportName }: Cho
         .attr("text-anchor", "middle")
         .style("font-size", "14px")
         .style("font-weight", "bold")
-        .text(`Variation de l'IMC ajuste des medailles — ${sportName}`);
+        .text(`Variation de l'IMC ajusté des médailles — ${sportName}`);
 
       svg
         .append("text")
@@ -267,7 +267,7 @@ const ChoroplethMap = ({ data, onCountryClick, selectedCountry, sportName }: Cho
         .attr("text-anchor", "middle")
         .style("font-size", "11px")
         .style("fill", "#666")
-        .text("Difference entre la derniere et la premiere annee de donnees par pays");
+        .text("Différence entre la dernière et la première année de données par pays");
     });
   }, [data, selectedCountry, sportName]);
 

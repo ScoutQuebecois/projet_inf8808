@@ -165,7 +165,7 @@ const Home = () => {
     return (
       <Container className="text-center mt-5">
         <Spinner animation="border" variant="primary" />
-        <p className="mt-2">Chargement des donnees...</p>
+        <p className="mt-2">Chargement des données...</p>
       </Container>
     );
   }
@@ -173,9 +173,9 @@ const Home = () => {
   return (
     <Container fluid className="px-4">
       <div className="data-container text-center mb-4">
-        <h2>Evolution des caracteristiques physiques des medailles olympiques</h2>
+        <h2>Évolution des caractéristiques physiques des médaillés olympiques</h2>
         <p className="text-muted">
-          Comparez l'evolution de la taille, du poids et de l'age moyen des medailles de 1896 a 2016 selon le sport.
+          Comparez l'évolution de la taille, du poids et de l'âge moyen des médaillés de 1896 à 2016 selon le sport.
         </p>
       </div>
 
@@ -189,7 +189,7 @@ const Home = () => {
             <Form.Check
               type="switch"
               id="medal-switch"
-              label={medalOnly ? "Medailles seulement" : "Tous les athletes"}
+              label={medalOnly ? "Médailles seulement" : "Tous les athletes"}
               checked={medalOnly}
               onChange={() => setMedalOnly(!medalOnly)}
               className="mb-3"
@@ -198,7 +198,7 @@ const Home = () => {
             {/* Quick season buttons */}
             <div className="mb-3">
               <small className="text-muted d-block mb-1">
-                Top 10 par variation de {sortMetric === "height" ? "taille" : sortMetric === "weight" ? "poids" : "age"} :
+                Top 10 par variation de {sortMetric === "height" ? "taille" : sortMetric === "weight" ? "poids" : "âge"} :
               </small>
               <ButtonGroup size="sm" className="w-100">
                 <ToggleButton
@@ -219,7 +219,7 @@ const Home = () => {
                   checked={seasonFilter === "summer"}
                   onChange={() => selectTop10("summer")}
                 >
-                  Ete
+                  Été
                 </ToggleButton>
                 <ToggleButton
                   id="btn-winter"
@@ -244,7 +244,7 @@ const Home = () => {
               >
                 <option value="height">Taille</option>
                 <option value="weight">Poids</option>
-                <option value="age">Age</option>
+                <option value="age">Âge</option>
               </Form.Select>
             </div>
 
@@ -289,7 +289,7 @@ const Home = () => {
         <Col lg={9}>
           <div className="data-container">
             {selectedSports.size === 0 ? (
-              <p className="text-center text-muted mt-4">Selectionnez au moins un sport pour afficher les graphiques.</p>
+              <p className="text-center text-muted mt-4">Séléctionnez au moins un sport pour afficher les graphiques.</p>
             ) : (
               <>
                 {/* Legend - at the top of charts area */}
@@ -367,8 +367,8 @@ const Home = () => {
                   <Col md={6}>
                     <LineChart
                       data={ageM}
-                      title="Age moyen — Hommes"
-                      yLabel="Age (ans)"
+                      title="Âge moyen — Hommes"
+                      yLabel="Âge (ans)"
                       colorScale={colorScale}
                       nonMedalData={isSingleSport && medalOnly ? nonMedalAgeM : undefined}
                       showNonMedal={isSingleSport && medalOnly}
@@ -377,8 +377,8 @@ const Home = () => {
                   <Col md={6}>
                     <LineChart
                       data={ageF}
-                      title="Age moyen — Femmes"
-                      yLabel="Age (ans)"
+                      title="Âge moyen — Femmes"
+                      yLabel="Âge (ans)"
                       colorScale={colorScale}
                       nonMedalData={isSingleSport && medalOnly ? nonMedalAgeF : undefined}
                       showNonMedal={isSingleSport && medalOnly}

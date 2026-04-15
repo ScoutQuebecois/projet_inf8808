@@ -147,7 +147,7 @@ const MapView = () => {
     return (
       <Container className="text-center mt-5">
         <Spinner animation="border" variant="primary" />
-        <p className="mt-2">Chargement des donnees...</p>
+        <p className="mt-2">Chargement des données...</p>
       </Container>
     );
   }
@@ -155,10 +155,10 @@ const MapView = () => {
   return (
     <Container fluid className="px-4">
       <div className="data-container text-center mb-4">
-        <h2>Evolution du profil physique par nation</h2>
+        <h2>Évolution du profil physique par nation</h2>
         <p className="text-muted">
-          Explorez comment l'IMC ajuste par l'age des medailles a varie entre la premiere et la derniere edition des Jeux pour chaque pays.
-          Cliquez sur un pays pour voir l'evolution detaillee.
+          Explorez comment l'IMC ajusté par l'âge des médaillés a évolué entre la première et la derniére édition des Jeux Olympiques pour chaque pays.
+          Cliquez sur un pays pour voir l'évolution détaillée.
         </p>
       </div>
 
@@ -193,10 +193,10 @@ const MapView = () => {
           <div className="data-container">
             <h6>Lecture de la carte</h6>
             <small className="text-muted">
-              <p>La couleur represente la variation de l'IMC ajuste (IMC x Age / 25) entre la premiere et la derniere participation du pays.</p>
+              <p>La couleur représente la variation de l'IMC ajusté (IMC x âge / 25) entre la première et la dernière participation du pays.</p>
               <div className="d-flex align-items-center mb-1">
                 <div style={{ width: 14, height: 14, backgroundColor: "#e8751a", marginRight: 6, borderRadius: 2 }} />
-                Variation negative
+                Variation négative
               </div>
               <div className="d-flex align-items-center mb-1">
                 <div style={{ width: 14, height: 14, backgroundColor: "#ffffff", border: "1px solid #ccc", marginRight: 6, borderRadius: 2 }} />
@@ -208,7 +208,7 @@ const MapView = () => {
               </div>
               <div className="d-flex align-items-center mb-1">
                 <div style={{ width: 14, height: 14, backgroundColor: "#eee", border: "1px solid #ccc", marginRight: 6, borderRadius: 2 }} />
-                Pas de donnees
+                Aucune donnée disponible
               </div>
             </small>
           </div>
@@ -217,7 +217,7 @@ const MapView = () => {
         <Col lg={9}>
           <div className="data-container text-center mb-3">
             {countryIMCData.length === 0 ? (
-              <p className="text-muted mt-4">Aucune donnee disponible pour ce sport.</p>
+              <p className="text-muted mt-4">Aucune donnée disponible pour ce sport.</p>
             ) : (
               <ChoroplethMap
                 data={countryIMCData}
@@ -240,7 +240,7 @@ const MapView = () => {
 
           {selectedCountryName && trendData.length === 0 && (
             <div className="data-container text-center">
-              <p className="text-muted">Aucune donnee detaillee disponible pour {selectedCountryName} dans ce sport.</p>
+              <p className="text-muted">Aucune donnée détaillée disponible pour {selectedCountryName} dans ce sport.</p>
             </div>
           )}
         </Col>

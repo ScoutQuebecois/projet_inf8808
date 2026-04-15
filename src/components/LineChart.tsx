@@ -180,7 +180,7 @@ const LineChart = ({
 
       legendG.append("line").attr("x1", 0).attr("x2", 20).attr("y1", 15).attr("y2", 15)
         .attr("stroke", "#666").attr("stroke-width", 1.5).attr("stroke-dasharray", "5,5");
-      legendG.append("text").attr("x", 25).attr("y", 19).text("Non-médaillés").style("font-size", "10px");
+      legendG.append("text").attr("x", 25).attr("y", 19).text("Non médaillés").style("font-size", "10px");
     }
   }, [data, title, yLabel, colorScale, highlightedSport, nonMedalData, showNonMedal]);
 

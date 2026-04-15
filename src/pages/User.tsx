@@ -35,8 +35,8 @@ const User = () => {
         <>
             <Container>
                 <div className="data-container text-center">
-                    <h2>Quelles sont vos performances par rapport aux champions du passe?</h2>
-                    <h6>Entrez vos donnees et comparez-vous aux medailles d'or de votre sport!</h6>
+                    <h2>Quelles sont vos performances par rapport aux champions du passé ?</h2>
+                    <h6>Saisissez vos données et comparez-vous aux médaillés d'or du sport de votre choix !</h6>
                 </div>
             </Container>
             <br />
@@ -122,7 +122,7 @@ const User = () => {
                                 </Form.Group>
 
                                 <Form.Group className="mb-3" controlId="formAge">
-                                    <Form.Label>Age</Form.Label>
+                                    <Form.Label>Âge</Form.Label>
                                     <Form.Control type="number" placeholder="" onChange={(e) => setUserAge(parseInt(e.target.value) || null)} />
                                 </Form.Group>
 
