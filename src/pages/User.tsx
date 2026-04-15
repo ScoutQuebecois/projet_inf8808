@@ -48,14 +48,14 @@ const User = () => {
                             <Container>
                                 <Row>
                                     <Col lg={8}>
-                                        <Form.Control
+                                        {/* <Form.Control
                                             size="sm"
                                             type="text"
                                             placeholder="Rechercher un sport..."
                                             value={sportSearch}
                                             onChange={(e) => setSportSearch(e.target.value)}
                                             className="mb-1"
-                                        />
+                                        /> */}
                                         <Select
                                             options={filteredSports.map((sport) => ({ value: sport, label: sport }))}
                                             placeholder="Choisir un sport"
@@ -101,7 +101,7 @@ const User = () => {
                                     <br/>
                                     <Row>
                                         <Col lg={6} className="align-self-center">
-                                            <h5 className="text-center">Age</h5>
+                                            <h5 className="text-center">Âge</h5>
                                             <BoxPlot userNumber={userAge} userSport={selectedOption.value} type="age" sexe={radioValue} />
                                         </Col>
                                     </Row>

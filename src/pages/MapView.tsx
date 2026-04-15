@@ -167,14 +167,14 @@ const MapView = () => {
           <div className="data-container mb-3">
             <h5>Filtres</h5>
             <Form.Label className="mt-2">Sport</Form.Label>
-            <Form.Control
+            {/* <Form.Control
               size="sm"
               type="text"
               placeholder="Rechercher un sport..."
               value={sportSearch}
               onChange={(e) => setSportSearch(e.target.value)}
               className="mb-1"
-            />
+            /> */}
             <Select
               options={sports
                 .filter((s) => s.toLowerCase().includes(sportSearch.toLowerCase()))

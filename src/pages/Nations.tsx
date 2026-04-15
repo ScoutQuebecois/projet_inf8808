@@ -109,14 +109,14 @@ const Nations = () => {
             <h5>Filtres</h5>
 
             <Form.Label className="mt-2">Sport</Form.Label>
-            <Form.Control
+            {/* <Form.Control
               size="sm"
               type="text"
               placeholder="Rechercher un sport..."
               value={sportSearch}
               onChange={(e) => setSportSearch(e.target.value)}
               className="mb-1"
-            />
+            /> */}
             <Select
               options={sports
                 .filter((s) => s.toLowerCase().includes(sportSearch.toLowerCase()))
@@ -129,14 +129,14 @@ const Nations = () => {
             />
 
             <Form.Label className="mt-3">Pays</Form.Label>
-            <Form.Control
+            {/* <Form.Control
               size="sm"
               type="text"
               placeholder="Rechercher un pays..."
               value={countrySearch}
               onChange={(e) => setCountrySearch(e.target.value)}
               className="mb-1"
-            />
+            /> */}
             <Select
               options={countries
                 .filter((c) => c.toLowerCase().includes(countrySearch.toLowerCase()))
