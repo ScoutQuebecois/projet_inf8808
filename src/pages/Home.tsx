@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { Container, Row, Col, Form, ButtonGroup, ToggleButton, Spinner } from "react-bootstrap";
+import { Container, Row, Col, Form } from "react-bootstrap";
 import * as d3 from "d3";
 import LineChart, { SeriesData } from "../components/LineChart";
 import { Athlete } from "../types/Athlete";
@@ -16,6 +16,59 @@ interface SportStats {
   stdAge: number;
 }
 
+const RING_COLORS = ["#0085C7", "#F4C300", "#222", "#009F6B", "#DF0024"];
+
+const Rings = () => (
+  <div className="rings-row">
+    {RING_COLORS.map((c, i) => (
+      <div
+        key={i}
+        className="ring-pip"
+        style={{ color: c, borderColor: i === 2 ? "rgba(255,255,255,0.3)" : c }}
+      />
+    ))}
+  </div>
+);
+
+const SeasonToggle = ({
+  value, current, label, accent, onClick,
+}: {
+  value: SeasonFilter; current: SeasonFilter; label: string; accent: string; onClick: () => void;
+}) => {
+  const active = value === current;
+  return (
+    <button
+      className="oly-toggle"
+      onClick={onClick}
+      style={{
+        borderColor: active ? accent : "var(--border-med)",
+        background: active ? `${accent}1a` : "transparent",
+        color: active ? accent : "var(--text)",
+      }}
+    >
+      {label}
+    </button>
+  );
+};
+
+const MetricPill = ({
+  label, active, accent, onClick,
+}: {
+  label: string; active: boolean; accent: string; onClick: () => void;
+}) => (
+  <button
+    className="oly-pill"
+    onClick={onClick}
+    style={{
+      borderColor: active ? accent : "var(--border-med)",
+      background: active ? `${accent}22` : "transparent",
+      color: active ? accent : "var(--text)",
+    }}
+  >
+    {label}
+  </button>
+);
+
 const Home = () => {
   const [data, setData] = useState<Athlete[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,78 +79,46 @@ const Home = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    loadAthleteData().then((cleaned) => {
-      setData(cleaned);
-      setLoading(false);
-    });
+    loadAthleteData().then((cleaned) => { setData(cleaned); setLoading(false); });
   }, []);
 
   const sportStats = useMemo<SportStats[]>(() => {
     if (!data.length) return [];
     const medalData = data.filter((d) => d.Medal !== null);
     const sports = [...new Set(medalData.map((d) => d.Sport))];
-
     return sports.map((sport) => {
       const athletes = medalData.filter((d) => d.Sport === sport);
       const seasons = [...new Set(athletes.map((d) => d.Season))];
       const season = seasons.length === 1 ? seasons[0] : "Both";
-
       const byYear = d3.groups(athletes, (d) => d.Year as number);
-      const yearlyHeights = byYear
-        .map(([, arr]) => d3.mean(arr, (d) => d.Height as number))
-        .filter((v): v is number => v != null);
-      const yearlyWeights = byYear
-        .map(([, arr]) => d3.mean(arr, (d) => d.Weight as number))
-        .filter((v): v is number => v != null);
-      const yearlyAges = byYear
-        .map(([, arr]) => d3.mean(arr, (d) => d.Age as number))
-        .filter((v): v is number => v != null);
-
-      return {
-        sport,
-        season,
-        stdHeight: d3.deviation(yearlyHeights) || 0,
-        stdWeight: d3.deviation(yearlyWeights) || 0,
-        stdAge: d3.deviation(yearlyAges) || 0,
-      };
+      const yH = byYear.map(([, a]) => d3.mean(a, (d) => d.Height as number)).filter((v): v is number => v != null);
+      const yW = byYear.map(([, a]) => d3.mean(a, (d) => d.Weight as number)).filter((v): v is number => v != null);
+      const yA = byYear.map(([, a]) => d3.mean(a, (d) => d.Age as number)).filter((v): v is number => v != null);
+      return { sport, season, stdHeight: d3.deviation(yH) || 0, stdWeight: d3.deviation(yW) || 0, stdAge: d3.deviation(yA) || 0 };
     });
   }, [data]);
 
   const sortedSports = useMemo(() => {
-    let filtered = [...sportStats];
-
-    if (seasonFilter === "summer") {
-      filtered = filtered.filter((s) => s.season === "Summer" || s.season === "Both");
-    } else if (seasonFilter === "winter") {
-      filtered = filtered.filter((s) => s.season === "Winter" || s.season === "Both");
-    }
-
-    const key = sortMetric === "height" ? "stdHeight" : sortMetric === "weight" ? "stdWeight" : "stdAge";
-    filtered.sort((a, b) => b[key] - a[key]);
-
-    return filtered;
+    let f = [...sportStats];
+    if (seasonFilter === "summer") f = f.filter((s) => s.season === "Summer" || s.season === "Both");
+    else if (seasonFilter === "winter") f = f.filter((s) => s.season === "Winter" || s.season === "Both");
+    const k = sortMetric === "height" ? "stdHeight" : sortMetric === "weight" ? "stdWeight" : "stdAge";
+    return f.sort((a, b) => b[k] - a[k]);
   }, [sportStats, seasonFilter, sortMetric]);
 
-  const selectTop10 = useCallback(
-    (season: SeasonFilter) => {
-      setSeasonFilter(season);
-      let filtered = [...sportStats];
-      if (season === "summer") {
-        filtered = filtered.filter((s) => s.season === "Summer" || s.season === "Both");
-      } else if (season === "winter") {
-        filtered = filtered.filter((s) => s.season === "Winter" || s.season === "Both");
-      }
-      const key = sortMetric === "height" ? "stdHeight" : sortMetric === "weight" ? "stdWeight" : "stdAge";
-      filtered.sort((a, b) => b[key] - a[key]);
-      setSelectedSports(new Set(filtered.slice(0, 10).map((s) => s.sport)));
-    },
-    [sportStats, sortMetric]
-  );
+  const selectTop10 = useCallback((season: SeasonFilter) => {
+    setSeasonFilter(season);
+    let f = [...sportStats];
+    if (season === "summer") f = f.filter((s) => s.season === "Summer" || s.season === "Both");
+    else if (season === "winter") f = f.filter((s) => s.season === "Winter" || s.season === "Both");
+    const k = sortMetric === "height" ? "stdHeight" : sortMetric === "weight" ? "stdWeight" : "stdAge";
+    f.sort((a, b) => b[k] - a[k]);
+    setSelectedSports(new Set(f.slice(0, 10).map((s) => s.sport)));
+  }, [sportStats, sortMetric]);
 
   useEffect(() => {
-    if (sortedSports.length > 0 && selectedSports.size === 0) {
+    if (sortedSports.length > 0 && selectedSports.size === 0)
       setSelectedSports(new Set(sortedSports.slice(0, 10).map((s) => s.sport)));
-    }
   }, [sortedSports]);
 
   const isSingleSport = selectedSports.size === 1;
@@ -105,17 +126,11 @@ const Home = () => {
   const buildSeriesData = useCallback(
     (metric: "Height" | "Weight" | "Age", sex: "M" | "F", onlyMedal: boolean): SeriesData[] => {
       if (!data.length) return [];
-      const filtered = data.filter((d) => {
-        const inSport = selectedSports.has(d.Sport);
-        const matchSex = d.Sex === sex;
-        const matchMedal = onlyMedal ? d.Medal !== null : true;
-        return inSport && matchSex && matchMedal;
-      });
-
-      const bySport = d3.groups(filtered, (d) => d.Sport);
-      return bySport.map(([sport, athletes]) => {
-        const byYear = d3.groups(athletes, (d) => d.Year as number);
-        const values = byYear
+      const filtered = data.filter((d) =>
+        selectedSports.has(d.Sport) && d.Sex === sex && (onlyMedal ? d.Medal !== null : true)
+      );
+      return d3.groups(filtered, (d) => d.Sport).map(([sport, athletes]) => {
+        const values = d3.groups(athletes, (d) => d.Year as number)
           .map(([year, arr]) => {
             const vals = arr.map((d) => d[metric] as number).filter((v) => v != null);
             const avg = d3.mean(vals);
@@ -125,8 +140,7 @@ const Home = () => {
           .sort((a, b) => a.year - b.year);
         return { sport, values };
       });
-    },
-    [data, selectedSports]
+    }, [data, selectedSports]
   );
 
   const colorScale = useMemo(() => {
@@ -140,257 +154,180 @@ const Home = () => {
   const weightF = useMemo(() => buildSeriesData("Weight", "F", medalOnly), [buildSeriesData, medalOnly]);
   const ageM = useMemo(() => buildSeriesData("Age", "M", medalOnly), [buildSeriesData, medalOnly]);
   const ageF = useMemo(() => buildSeriesData("Age", "F", medalOnly), [buildSeriesData, medalOnly]);
-
-  const nonMedalHeightM = useMemo(() => (isSingleSport ? buildSeriesData("Height", "M", false) : []), [buildSeriesData, isSingleSport]);
-  const nonMedalHeightF = useMemo(() => (isSingleSport ? buildSeriesData("Height", "F", false) : []), [buildSeriesData, isSingleSport]);
-  const nonMedalWeightM = useMemo(() => (isSingleSport ? buildSeriesData("Weight", "M", false) : []), [buildSeriesData, isSingleSport]);
-  const nonMedalWeightF = useMemo(() => (isSingleSport ? buildSeriesData("Weight", "F", false) : []), [buildSeriesData, isSingleSport]);
-  const nonMedalAgeM = useMemo(() => (isSingleSport ? buildSeriesData("Age", "M", false) : []), [buildSeriesData, isSingleSport]);
-  const nonMedalAgeF = useMemo(() => (isSingleSport ? buildSeriesData("Age", "F", false) : []), [buildSeriesData, isSingleSport]);
+  const nmHM = useMemo(() => isSingleSport ? buildSeriesData("Height", "M", false) : [], [buildSeriesData, isSingleSport]);
+  const nmHF = useMemo(() => isSingleSport ? buildSeriesData("Height", "F", false) : [], [buildSeriesData, isSingleSport]);
+  const nmWM = useMemo(() => isSingleSport ? buildSeriesData("Weight", "M", false) : [], [buildSeriesData, isSingleSport]);
+  const nmWF = useMemo(() => isSingleSport ? buildSeriesData("Weight", "F", false) : [], [buildSeriesData, isSingleSport]);
+  const nmAM = useMemo(() => isSingleSport ? buildSeriesData("Age", "M", false) : [], [buildSeriesData, isSingleSport]);
+  const nmAF = useMemo(() => isSingleSport ? buildSeriesData("Age", "F", false) : [], [buildSeriesData, isSingleSport]);
 
   const toggleSport = (sport: string) => {
     setSelectedSports((prev) => {
       const next = new Set(prev);
-      if (next.has(sport)) next.delete(sport);
-      else next.add(sport);
+      next.has(sport) ? next.delete(sport) : next.add(sport);
       return next;
     });
   };
 
-  const filteredSportList = sortedSports.filter((s) =>
-    s.sport.toLowerCase().includes(searchTerm.toLowerCase())
+  const metricKey = sortMetric === "height" ? "stdHeight" : sortMetric === "weight" ? "stdWeight" : "stdAge";
+  const filtered = sortedSports.filter((s) => s.sport.toLowerCase().includes(searchTerm.toLowerCase()));
+
+  const nmProps = (nm: SeriesData[]) => ({
+    nonMedalData: isSingleSport && medalOnly ? nm : undefined,
+    showNonMedal: isSingleSport && medalOnly,
+  });
+
+  if (loading) return (
+    <div className="loading-screen">
+      <Rings />
+      <div style={{ width: 36, height: 36, border: "3px solid rgba(255,255,255,0.1)", borderTopColor: "#0085C7", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+      <p className="loading-label">Chargement des données</p>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
   );
 
-  if (loading) {
-    return (
-      <Container className="text-center mt-5">
-        <Spinner animation="border" variant="primary" />
-        <p className="mt-2">Chargement des données...</p>
-      </Container>
-    );
-  }
-
   return (
-    <Container fluid className="px-4">
-      <div className="data-container text-center mb-4">
-        <h2>Évolution des caractéristiques physiques des médaillés olympiques</h2>
-        <p className="text-muted">
-          Comparez l'évolution de la taille, du poids et de l'âge moyen des médaillés de 1896 à 2016 selon le sport.
-        </p>
-      </div>
+    <div className="page-wrapper">
+      <Container fluid style={{ maxWidth: 1400, padding: "0 20px" }}>
 
-      <Row>
-        {/* Sidebar filters */}
-        <Col lg={3}>
-          <div className="data-container mb-3">
-            <h5>Filtres</h5>
+        <div className="page-hero">
+          <Rings />
+          <h1 className="page-hero-title">Évolution des profils physiques olympiques</h1>
+          <p className="page-hero-sub">
+            Comparez taille, poids et âge moyen des médaillés de 1896 à 2016, filtrés par sport et saison.
+          </p>
+        </div>
 
-            {/* Medal toggle */}
-            <Form.Check
-              type="switch"
-              id="medal-switch"
-              label={medalOnly ? "Médailles seulement" : "Tous les athletes"}
-              checked={medalOnly}
-              onChange={() => setMedalOnly(!medalOnly)}
-              className="mb-3"
-            />
+        <Row className="g-3">
 
-            {/* Quick season buttons */}
-            <div className="mb-3">
-              <small className="text-muted d-block mb-1">
-                Top 10 par variation de {sortMetric === "height" ? "taille" : sortMetric === "weight" ? "poids" : "âge"} :
-              </small>
-              <ButtonGroup size="sm" className="w-100">
-                <ToggleButton
-                  id="btn-all"
-                  type="radio"
-                  variant="outline-secondary"
-                  value="all"
-                  checked={seasonFilter === "all"}
-                  onChange={() => selectTop10("all")}
-                >
-                  Tous
-                </ToggleButton>
-                <ToggleButton
-                  id="btn-summer"
-                  type="radio"
-                  variant="outline-warning"
-                  value="summer"
-                  checked={seasonFilter === "summer"}
-                  onChange={() => selectTop10("summer")}
-                >
-                  Été
-                </ToggleButton>
-                <ToggleButton
-                  id="btn-winter"
-                  type="radio"
-                  variant="outline-info"
-                  value="winter"
-                  checked={seasonFilter === "winter"}
-                  onChange={() => selectTop10("winter")}
-                >
-                  Hiver
-                </ToggleButton>
-              </ButtonGroup>
+          <Col lg={3}>
+            <div className="panel">
+
+              <span className="section-label">Affichage</span>
+              <div className="medal-row mb-3">
+                <span className="medal-row-label">
+                  {medalOnly ? "Médaillés uniquement" : "Tous les athlètes"}
+                </span>
+                <Form.Check type="switch" id="medal-switch" checked={medalOnly}
+                  onChange={() => setMedalOnly(!medalOnly)} style={{ margin: 0 }} />
+              </div>
+
+              <hr className="oly-divider" />
+
+              <span className="section-label">
+                Top 10 — variation de {sortMetric === "height" ? "taille" : sortMetric === "weight" ? "poids" : "âge"}
+              </span>
+              <div className="oly-toggle-group mb-3">
+                <SeasonToggle value="all" current={seasonFilter} label="Tous" accent="#0085C7" onClick={() => selectTop10("all")} />
+                <SeasonToggle value="summer" current={seasonFilter} label="Été" accent="#F4C300" onClick={() => selectTop10("summer")} />
+                <SeasonToggle value="winter" current={seasonFilter} label="Hiver" accent="#8ecae6" onClick={() => selectTop10("winter")} />
+              </div>
+
+              <span className="section-label">Trier par</span>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
+                <MetricPill label="Taille" active={sortMetric === "height"} accent="#0085C7" onClick={() => setSortMetric("height")} />
+                <MetricPill label="Poids" active={sortMetric === "weight"} accent="#DF0024" onClick={() => setSortMetric("weight")} />
+                <MetricPill label="Âge" active={sortMetric === "age"} accent="#009F6B" onClick={() => setSortMetric("age")} />
+              </div>
+
+              <hr className="oly-divider" />
+
+              <input
+                className="form-control mb-3"
+                type="text"
+                placeholder="Rechercher un sport…"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+
+              <div className="sport-list">
+                {filtered.map((s) => {
+                  const sel = selectedSports.has(s.sport);
+                  const color = colorScale(s.sport);
+                  return (
+                    <div
+                      key={s.sport}
+                      className={`sport-row ${sel ? "selected" : ""}`}
+                      onClick={() => toggleSport(s.sport)}
+                    >
+                      <div
+                        className={`sport-tick ${sel ? "on" : ""}`}
+                        style={sel ? { background: color, borderColor: color } : {}}
+                      >
+                        {sel && (
+                          <svg width="8" height="8" viewBox="0 0 8 8">
+                            <polyline points="1,4.5 3,6.5 7,1.5" stroke="#fff" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
+                      </div>
+                      <span className="sport-name-text">{s.sport}</span>
+                      <span className="sport-std-val">{s[metricKey].toFixed(1)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div style={{ textAlign: "center", marginTop: 10, fontSize: "0.7rem", color: "var(--text)" }}>
+                {selectedSports.size} sport{selectedSports.size !== 1 ? "s" : ""} sélectionné{selectedSports.size !== 1 ? "s" : ""}
+              </div>
             </div>
+          </Col>
 
-            {/* Sort metric */}
-            <div className="mb-3">
-              <small className="text-muted d-block mb-1">Trier par variation de :</small>
-              <Form.Select
-                size="sm"
-                value={sortMetric}
-                onChange={(e) => setSortMetric(e.target.value as SortMetric)}
-              >
-                <option value="height">Taille</option>
-                <option value="weight">Poids</option>
-                <option value="age">Âge</option>
-              </Form.Select>
-            </div>
-
-            {/* Search */}
-            <Form.Control
-              size="sm"
-              type="text"
-              placeholder="Rechercher un sport..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="mb-2"
-            />
-
-            {/* Sport list */}
-            <div style={{ maxHeight: "400px", overflowY: "auto" }}>
-              {filteredSportList.map((s) => (
-                <Form.Check
-                  key={s.sport}
-                  type="checkbox"
-                  id={`sport-${s.sport}`}
-                  label={
-                    <span>
-                      {s.sport}{" "}
-                      <small className="text-muted">
-                        ({sortMetric === "height"
-                          ? s.stdHeight.toFixed(1)
-                          : sortMetric === "weight"
-                          ? s.stdWeight.toFixed(1)
-                          : s.stdAge.toFixed(1)})
-                      </small>
-                    </span>
-                  }
-                  checked={selectedSports.has(s.sport)}
-                  onChange={() => toggleSport(s.sport)}
-                />
-              ))}
-            </div>
-          </div>
-        </Col>
-
-        {/* Charts */}
-        <Col lg={9}>
-          <div className="data-container">
-            {selectedSports.size === 0 ? (
-              <p className="text-center text-muted mt-4">Séléctionnez au moins un sport pour afficher les graphiques.</p>
-            ) : (
-              <>
-                {/* Legend - at the top of charts area */}
-                <div className="mb-3 p-2" style={{ backgroundColor: "#fafafa", borderRadius: 6, border: "1px solid #eee" }}>
-                  <div className="d-flex flex-wrap align-items-center gap-3">
-                    <small className="text-muted fw-bold me-2">Legende :</small>
+          <Col lg={9}>
+            <div className="panel">
+              {selectedSports.size === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-icon" aria-hidden="true" />
+                  <p style={{ fontSize: "0.88rem" }}>Sélectionnez au moins un sport pour afficher les graphiques.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="legend-strip">
+                    <span className="legend-strip-label">Légende</span>
                     {[...selectedSports].map((sport) => (
-                      <div key={sport} className="d-flex align-items-center">
-                        <div
-                          style={{
-                            width: 12,
-                            height: 12,
-                            backgroundColor: colorScale(sport),
-                            borderRadius: 2,
-                            marginRight: 4,
-                            flexShrink: 0,
-                          }}
-                        />
-                        <small>{sport}</small>
+                      <div key={sport} className="legend-chip">
+                        <div className="legend-swatch" style={{ background: colorScale(sport) }} />
+                        {sport}
                       </div>
                     ))}
                   </div>
-                </div>
 
-                {/* Height row */}
-                <Row className="mb-3">
-                  <Col md={6}>
-                    <LineChart
-                      data={heightM}
-                      title="Taille moyenne — Hommes"
-                      yLabel="Taille (cm)"
-                      colorScale={colorScale}
-                      nonMedalData={isSingleSport && medalOnly ? nonMedalHeightM : undefined}
-                      showNonMedal={isSingleSport && medalOnly}
-                    />
-                  </Col>
-                  <Col md={6}>
-                    <LineChart
-                      data={heightF}
-                      title="Taille moyenne — Femmes"
-                      yLabel="Taille (cm)"
-                      colorScale={colorScale}
-                      nonMedalData={isSingleSport && medalOnly ? nonMedalHeightF : undefined}
-                      showNonMedal={isSingleSport && medalOnly}
-                    />
-                  </Col>
-                </Row>
+                  <p className="chart-group-label">Taille moyenne (cm)</p>
+                  <Row className="mb-4 g-3">
+                    <Col md={6}>
+                      <LineChart data={heightM} title="Hommes" yLabel="Taille (cm)" colorScale={colorScale} {...nmProps(nmHM)} />
+                    </Col>
+                    <Col md={6}>
+                      <LineChart data={heightF} title="Femmes" yLabel="Taille (cm)" colorScale={colorScale} {...nmProps(nmHF)} />
+                    </Col>
+                  </Row>
 
-                {/* Weight row */}
-                <Row className="mb-3">
-                  <Col md={6}>
-                    <LineChart
-                      data={weightM}
-                      title="Poids moyen — Hommes"
-                      yLabel="Poids (kg)"
-                      colorScale={colorScale}
-                      nonMedalData={isSingleSport && medalOnly ? nonMedalWeightM : undefined}
-                      showNonMedal={isSingleSport && medalOnly}
-                    />
-                  </Col>
-                  <Col md={6}>
-                    <LineChart
-                      data={weightF}
-                      title="Poids moyen — Femmes"
-                      yLabel="Poids (kg)"
-                      colorScale={colorScale}
-                      nonMedalData={isSingleSport && medalOnly ? nonMedalWeightF : undefined}
-                      showNonMedal={isSingleSport && medalOnly}
-                    />
-                  </Col>
-                </Row>
+                  <p className="chart-group-label">Poids moyen (kg)</p>
+                  <Row className="mb-4 g-3">
+                    <Col md={6}>
+                      <LineChart data={weightM} title="Hommes" yLabel="Poids (kg)" colorScale={colorScale} {...nmProps(nmWM)} />
+                    </Col>
+                    <Col md={6}>
+                      <LineChart data={weightF} title="Femmes" yLabel="Poids (kg)" colorScale={colorScale} {...nmProps(nmWF)} />
+                    </Col>
+                  </Row>
 
-                {/* Age row */}
-                <Row>
-                  <Col md={6}>
-                    <LineChart
-                      data={ageM}
-                      title="Âge moyen — Hommes"
-                      yLabel="Âge (ans)"
-                      colorScale={colorScale}
-                      nonMedalData={isSingleSport && medalOnly ? nonMedalAgeM : undefined}
-                      showNonMedal={isSingleSport && medalOnly}
-                    />
-                  </Col>
-                  <Col md={6}>
-                    <LineChart
-                      data={ageF}
-                      title="Âge moyen — Femmes"
-                      yLabel="Âge (ans)"
-                      colorScale={colorScale}
-                      nonMedalData={isSingleSport && medalOnly ? nonMedalAgeF : undefined}
-                      showNonMedal={isSingleSport && medalOnly}
-                    />
-                  </Col>
-                </Row>
-              </>
-            )}
-          </div>
-        </Col>
-      </Row>
-    </Container>
+                  <p className="chart-group-label">Âge moyen (ans)</p>
+                  <Row className="g-3">
+                    <Col md={6}>
+                      <LineChart data={ageM} title="Hommes" yLabel="Âge (ans)" colorScale={colorScale} {...nmProps(nmAM)} />
+                    </Col>
+                    <Col md={6}>
+                      <LineChart data={ageF} title="Femmes" yLabel="Âge (ans)" colorScale={colorScale} {...nmProps(nmAF)} />
+                    </Col>
+                  </Row>
+                </>
+              )}
+            </div>
+          </Col>
+        </Row>
+      </Container>
+    </div>
   );
 };
 

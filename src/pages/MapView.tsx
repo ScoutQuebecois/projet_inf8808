@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { Container, Row, Col, Spinner, Form } from "react-bootstrap";
+import { Container, Row, Col } from "react-bootstrap";
 import * as d3 from "d3";
 import Select from "react-select";
 import ChoroplethMap, { CountryIMCData } from "../components/ChoroplethMap";
@@ -8,6 +8,14 @@ import { Athlete } from "../types/Athlete";
 import { Option } from "../types/Options";
 import { loadAthleteData } from "../utils/dataLoader";
 import { nocToIso } from "../utils/nocMapping";
+
+const Rings = () => (
+  <div className="rings-row">
+    {["#0085C7","#F4C300","rgba(255,255,255,0.3)","#009F6B","#DF0024"].map((c, i) => (
+      <div key={i} className="ring-pip" style={{ borderColor: c }} />
+    ))}
+  </div>
+);
 
 const MapView = () => {
   const [data, setData] = useState<Athlete[]>([]);
@@ -18,124 +26,69 @@ const MapView = () => {
   const [selectedCountryName, setSelectedCountryName] = useState<string | null>(null);
 
   useEffect(() => {
-    loadAthleteData().then((cleaned) => {
-      setData(cleaned);
-      setLoading(false);
-    });
+    loadAthleteData().then((cleaned) => { setData(cleaned); setLoading(false); });
   }, []);
 
   const sports = useMemo(() => {
     if (!data.length) return [];
-    const medalData = data.filter(
-      (d) =>
-        d.Medal !== null &&
-        d.Height != null &&
-        d.Weight != null &&
-        d.Age != null &&
-        (d.Height as number) > 0 &&
-        (d.Weight as number) > 0 &&
-        (d.Age as number) > 0
+    const medalData = data.filter((d) =>
+      d.Medal !== null && d.Height != null && d.Weight != null && d.Age != null &&
+      (d.Height as number) > 0 && (d.Weight as number) > 0 && (d.Age as number) > 0
     );
-    const bySport = d3.groups(medalData, (d) => d.Sport);
-    return bySport
-      .filter(([, athletes]) => {
-        const countries = d3.groups(athletes, (d) => d.Team);
-        return countries.some(([, countryAthletes]) => {
-          const years = new Set(countryAthletes.map((a) => a.Year));
-          return years.size >= 2;
-        });
-      })
-      .map(([sport]) => sport)
-      .sort();
+    return d3.groups(medalData, (d) => d.Sport)
+      .filter(([, athletes]) =>
+        d3.groups(athletes, (d) => d.Team).some(([, ca]) => new Set(ca.map((a) => a.Year)).size >= 2)
+      )
+      .map(([sport]) => sport).sort();
   }, [data]);
 
   useEffect(() => {
-    if (sports.length > 0 && selectedSport === null) {
+    if (sports.length > 0 && selectedSport === null)
       setSelectedSport({ value: sports[0], label: sports[0] });
-    }
   }, [sports]);
 
   const sportName = selectedSport?.value || "";
 
   const countryIMCData = useMemo<CountryIMCData[]>(() => {
     if (!data.length || !sportName) return [];
-
-    const medalData = data.filter(
-      (d) =>
-        d.Medal !== null &&
-        d.Sport === sportName &&
-        d.Height != null &&
-        d.Weight != null &&
-        d.Age != null &&
-        (d.Height as number) > 0 &&
-        (d.Weight as number) > 0 &&
-        (d.Age as number) > 0
+    const medalData = data.filter((d) =>
+      d.Medal !== null && d.Sport === sportName &&
+      d.Height != null && d.Weight != null && d.Age != null &&
+      (d.Height as number) > 0 && (d.Weight as number) > 0 && (d.Age as number) > 0
     );
+    const computeIMC = (arr: Athlete[]) =>
+      d3.mean(arr.map((a) => {
+        const h = (a.Height as number) / 100;
+        const w = a.Weight as number;
+        const age = a.Age as number;
+        return (w / (h * h)) * (age / 25);
+      }).filter((v) => isFinite(v))) || 0;
 
-    const byCountry = d3.groups(medalData, (d) => d.Team);
-
-    return byCountry
+    return d3.groups(medalData, (d) => d.Team)
       .map(([country, athletes]) => {
         const byYear = d3.groups(athletes, (d) => d.Year as number).sort((a, b) => a[0] - b[0]);
         if (byYear.length < 2) return null;
-
-        const computeIMC = (arr: Athlete[]) => {
-          const vals = arr
-            .map((a) => {
-              const h = (a.Height as number) / 100;
-              const w = a.Weight as number;
-              const age = a.Age as number;
-              const bmi = w / (h * h);
-              return bmi * (age / 25);
-            })
-            .filter((v) => isFinite(v));
-          return d3.mean(vals) || 0;
-        };
-
-        const firstYear = byYear[0][1];
-        const lastYear = byYear[byYear.length - 1][1];
-        const delta = computeIMC(lastYear) - computeIMC(firstYear);
-
-        const noc = athletes[0].NOC;
-        const iso3 = nocToIso(noc);
-
-        return {
-          country,
-          iso3,
-          delta,
-        };
+        const delta = computeIMC(byYear[byYear.length - 1][1]) - computeIMC(byYear[0][1]);
+        return { country, iso3: nocToIso(athletes[0].NOC), delta };
       })
       .filter((d): d is CountryIMCData => d !== null);
   }, [data, sportName]);
 
   const trendData = useMemo<YearlyIMC[]>(() => {
     if (!data.length || !selectedCountryName || !sportName) return [];
-
-    const medalData = data.filter(
-      (d) =>
-        d.Medal !== null &&
-        d.Sport === sportName &&
-        d.Team === selectedCountryName &&
-        d.Height != null &&
-        d.Weight != null &&
-        d.Age != null &&
-        (d.Height as number) > 0 &&
-        (d.Weight as number) > 0 &&
-        (d.Age as number) > 0
+    const medalData = data.filter((d) =>
+      d.Medal !== null && d.Sport === sportName && d.Team === selectedCountryName &&
+      d.Height != null && d.Weight != null && d.Age != null &&
+      (d.Height as number) > 0 && (d.Weight as number) > 0 && (d.Age as number) > 0
     );
-
-    const byYear = d3.groups(medalData, (d) => d.Year as number).sort((a, b) => a[0] - b[0]);
-
-    return byYear.map(([year, athletes]) => {
-      const vals = athletes.map((a) => {
-        const h = (a.Height as number) / 100;
-        const w = a.Weight as number;
-        const age = a.Age as number;
-        const bmi = w / (h * h);
-        return bmi * (age / 25);
-      });
-      return { year, imc: d3.mean(vals) || 0 };
-    });
+    return d3.groups(medalData, (d) => d.Year as number).sort((a, b) => a[0] - b[0])
+      .map(([year, athletes]) => ({
+        year,
+        imc: d3.mean(athletes.map((a) => {
+          const h = (a.Height as number) / 100;
+          return (a.Weight as number) / (h * h) * ((a.Age as number) / 25);
+        })) || 0,
+      }));
   }, [data, selectedCountryName, sportName]);
 
   const handleCountryClick = (country: string, _iso3: string) => {
@@ -143,109 +96,142 @@ const MapView = () => {
     setSelectedCountry(country);
   };
 
-  if (loading) {
-    return (
-      <Container className="text-center mt-5">
-        <Spinner animation="border" variant="primary" />
-        <p className="mt-2">Chargement des données...</p>
-      </Container>
-    );
-  }
+  if (loading) return (
+    <div className="loading-screen">
+      <Rings />
+      <div style={{ width: 36, height: 36, border: "3px solid rgba(255,255,255,0.1)", borderTopColor: "#0085C7", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+      <p className="loading-label">Chargement des données</p>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+
+  const LEGEND_ITEMS = [
+    { color: "#e8751a", border: "1px solid rgba(0,0,0, 1)", label: "Variation négative (IMC ajusté en baisse)" },
+    { color: "#ffffff", border: "1px solid rgba(0,0,0, 1)", label: "Aucune variation" },
+    { color: "#4a90d9", border: "1px solid rgba(0,0,0, 1)", label: "Variation positive (IMC ajusté en hausse)" },
+    { color: "#E1E8F0", border: "1px solid rgba(0,0,0, 1)", label: "Données insuffisantes" },
+  ];
 
   return (
-    <Container fluid className="px-4">
-      <div className="data-container text-center mb-4">
-        <h2>Évolution du profil physique par nation</h2>
-        <p className="text-muted">
-          Explorez comment l'IMC ajusté par l'âge des médaillés a évolué entre la première et la derniére édition des Jeux Olympiques pour chaque pays.
-          Cliquez sur un pays pour voir l'évolution détaillée.
-        </p>
-      </div>
+    <div className="page-wrapper">
+      <Container fluid style={{ maxWidth: 1400, padding: "0 20px" }}>
 
-      <Row>
-        <Col lg={3}>
-          <div className="data-container mb-3">
-            <h5>Filtres</h5>
-            <Form.Label className="mt-2">Sport</Form.Label>
-            {/* <Form.Control
-              size="sm"
-              type="text"
-              placeholder="Rechercher un sport..."
-              value={sportSearch}
-              onChange={(e) => setSportSearch(e.target.value)}
-              className="mb-1"
-            /> */}
-            <Select
-              options={sports
-                .filter((s) => s.toLowerCase().includes(sportSearch.toLowerCase()))
-                .map((s) => ({ value: s, label: s }))}
-              placeholder="Choisir un sport"
-              isSearchable
-              onChange={(opt) => {
-                setSelectedSport(opt as Option | null);
-                setSelectedCountry(null);
-                setSelectedCountryName(null);
-              }}
-              value={selectedSport}
-            />
-          </div>
+        <div className="page-hero">
+          <Rings />
+          <h1 className="page-hero-title">Évolution du profil physique par nation</h1>
+          <p className="page-hero-sub">
+            Explorez comment l'IMC ajusté par l'âge des médaillés a évolué entre la première et la dernière édition des Jeux pour chaque pays. Cliquez sur un pays pour l'évolution détaillée.
+          </p>
+        </div>
 
-          <div className="data-container">
-            <h6>Lecture de la carte</h6>
-            <small className="text-muted">
-              <p>La couleur représente la variation de l'IMC ajusté (IMC x âge / 25) entre la première et la dernière participation du pays.</p>
-              <div className="d-flex align-items-center mb-1">
-                <div style={{ width: 14, height: 14, backgroundColor: "#e8751a", marginRight: 6, borderRadius: 2 }} />
-                Variation négative
-              </div>
-              <div className="d-flex align-items-center mb-1">
-                <div style={{ width: 14, height: 14, backgroundColor: "#ffffff", border: "1px solid #ccc", marginRight: 6, borderRadius: 2 }} />
-                Pas de variation
-              </div>
-              <div className="d-flex align-items-center mb-1">
-                <div style={{ width: 14, height: 14, backgroundColor: "#4a90d9", marginRight: 6, borderRadius: 2 }} />
-                Variation positive
-              </div>
-              <div className="d-flex align-items-center mb-1">
-                <div style={{ width: 14, height: 14, backgroundColor: "#eee", border: "1px solid #ccc", marginRight: 6, borderRadius: 2 }} />
-                Aucune donnée disponible
-              </div>
-            </small>
-          </div>
-        </Col>
+        <Row className="g-3">
 
-        <Col lg={9}>
-          <div className="data-container text-center mb-3">
-            {countryIMCData.length === 0 ? (
-              <p className="text-muted mt-4">Aucune donnée disponible pour ce sport.</p>
-            ) : (
-              <ChoroplethMap
-                data={countryIMCData}
-                onCountryClick={handleCountryClick}
-                selectedCountry={selectedCountry}
-                sportName={sportName}
-              />
+          <Col lg={3}>
+            <div className="panel">
+              <span className="section-label">Sport</span>
+              <div className="mb-4">
+                <Select
+                  classNamePrefix="rs"
+                  className="olympic-select"
+                  options={sports.filter((s) => s.toLowerCase().includes(sportSearch.toLowerCase())).map((s) => ({ value: s, label: s }))}
+                  placeholder="Choisir un sport"
+                  isSearchable
+                  onChange={(opt) => {
+                    setSelectedSport(opt as Option | null);
+                    setSelectedCountry(null);
+                    setSelectedCountryName(null);
+                  }}
+                  value={selectedSport}
+                />
+              </div>
+
+              <hr className="oly-divider" />
+
+              <span className="section-label">Lecture de la carte</span>
+              <p style={{ fontSize: "0.78rem", color: "var(--text)", marginBottom: 12, marginTop: 6 }}>
+                Variation de l'IMC ajusté (IMC × âge / 25) entre la première et la dernière participation.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {LEGEND_ITEMS.map(({ color, border, label }) => (
+                  <div key={label} className="legend-card">
+                    <div className="legend-dot-square" style={{ background: color, border: border || "none" }} />
+                    <span style={{ fontSize: "0.78rem" }}>{label}</span>
+                  </div>
+                ))}
+              </div>
+
+              {selectedCountryName && (
+                <>
+                  <hr className="oly-divider" />
+                  <span className="section-label">Pays sélectionné</span>
+                  <div style={{
+                    background: "var(--bg-2)",
+                    border: "1px solid var(--border-med)",
+                    borderRadius: "var(--radius)",
+                    padding: "10px 14px",
+                    fontSize: "0.85rem",
+                    color: "var(--text)",
+                    fontWeight: 500,
+                  }}>
+                    {selectedCountryName}
+                  </div>
+                  <button
+                    onClick={() => { setSelectedCountry(null); setSelectedCountryName(null); }}
+                    style={{
+                      width: "100%", marginTop: 8, padding: "6px 0",
+                      borderRadius: "var(--radius-sm)", border: "1.5px solid var(--border-med)",
+                      background: "transparent", color: "var(--text)",
+                      fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.06em",
+                      textTransform: "uppercase", cursor: "pointer",
+                      transition: "var(--transition)",
+                    }}
+                  >
+                    Désélectionner
+                  </button>
+                </>
+              )}
+            </div>
+          </Col>
+
+          <Col lg={9}>
+            <div className="panel mb-3">
+              {countryIMCData.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-icon" aria-hidden="true" />
+                  <p style={{ fontSize: "0.88rem" }}>Aucune donnée disponible pour ce sport.</p>
+                </div>
+              ) : (
+                <ChoroplethMap
+                  data={countryIMCData}
+                  onCountryClick={handleCountryClick}
+                  selectedCountry={selectedCountry}
+                  sportName={sportName}
+                />
+              )}
+            </div>
+
+            {selectedCountryName && trendData.length > 0 && (
+              <div className="panel">
+                <p className="chart-group-label" style={{ marginBottom: 16 }}>
+                  Évolution de l'IMC ajusté — {selectedCountryName}
+                </p>
+                <TrendLineChart data={trendData} country={selectedCountryName} sport={sportName} />
+              </div>
             )}
-          </div>
 
-          {selectedCountryName && trendData.length > 0 && (
-            <div className="data-container text-center">
-              <TrendLineChart
-                data={trendData}
-                country={selectedCountryName}
-                sport={sportName}
-              />
-            </div>
-          )}
-
-          {selectedCountryName && trendData.length === 0 && (
-            <div className="data-container text-center">
-              <p className="text-muted">Aucune donnée détaillée disponible pour {selectedCountryName} dans ce sport.</p>
-            </div>
-          )}
-        </Col>
-      </Row>
-    </Container>
+            {selectedCountryName && trendData.length === 0 && (
+              <div className="panel">
+                <div className="empty-state" style={{ minHeight: 120 }}>
+                  <p style={{ fontSize: "0.85rem" }}>
+                    Données insuffisantes pour {selectedCountryName} dans ce sport.
+                  </p>
+                </div>
+              </div>
+            )}
+          </Col>
+        </Row>
+      </Container>
+    </div>
   );
 };
 

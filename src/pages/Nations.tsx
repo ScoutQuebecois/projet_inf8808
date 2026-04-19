@@ -1,11 +1,19 @@
 import { useEffect, useState, useMemo } from "react";
-import { Container, Row, Col, Spinner, Form } from "react-bootstrap";
+import { Container, Row, Col } from "react-bootstrap";
 import * as d3 from "d3";
 import Select from "react-select";
 import ScatterPlot, { BubbleData } from "../components/ScatterPlot";
 import { Athlete } from "../types/Athlete";
 import { Option } from "../types/Options";
 import { loadAthleteData } from "../utils/dataLoader";
+
+const Rings = () => (
+  <div className="rings-row">
+    {["#0085C7","#F4C300","rgba(255,255,255,0.3)","#009F6B","#DF0024"].map((c, i) => (
+      <div key={i} className="ring-pip" style={{ borderColor: c }} />
+    ))}
+  </div>
+);
 
 const Nations = () => {
   const [data, setData] = useState<Athlete[]>([]);
@@ -17,10 +25,7 @@ const Nations = () => {
   const [countrySearch] = useState("");
 
   useEffect(() => {
-    loadAthleteData().then((cleaned) => {
-      setData(cleaned);
-      setLoading(false);
-    });
+    loadAthleteData().then((cleaned) => { setData(cleaned); setLoading(false); });
   }, []);
 
   const sports = useMemo(() => {
@@ -35,30 +40,20 @@ const Nations = () => {
 
   const bubbleData = useMemo<BubbleData[]>(() => {
     if (!data.length) return [];
-
     const medalData = data.filter((d) => {
-      const hasMedal = d.Medal !== null;
-      const matchSex = sexFilter === "" || d.Sex === sexFilter;
-      const hasPhysical =
+      return d.Medal !== null &&
+        (sexFilter === "" || d.Sex === sexFilter) &&
         d.Height != null && d.Weight != null && d.Age != null;
-      return hasMedal && matchSex && hasPhysical;
     });
-
     const grouped = d3.groups(medalData, (d) => d.Team, (d) => d.Sport);
-
     const countryDominant = new Map<string, string>();
     grouped.forEach(([country, sportGroups]) => {
-      let maxMedals = 0;
-      let dominantSport = "";
+      let maxMedals = 0; let dominantSport = "";
       sportGroups.forEach(([sport, athletes]) => {
-        if (athletes.length > maxMedals) {
-          maxMedals = athletes.length;
-          dominantSport = sport;
-        }
+        if (athletes.length > maxMedals) { maxMedals = athletes.length; dominantSport = sport; }
       });
       countryDominant.set(country, dominantSport);
     });
-
     const result: BubbleData[] = [];
     grouped.forEach(([country, sportGroups]) => {
       sportGroups.forEach(([sport, athletes]) => {
@@ -66,131 +61,122 @@ const Nations = () => {
         const avgWeight = d3.mean(athletes, (d) => d.Weight as number) || 0;
         const avgAge = d3.mean(athletes, (d) => d.Age as number) || 0;
         const medalCount = athletes.length;
-
         if (avgHeight === 0 || avgWeight === 0) return;
-
-        result.push({
-          country,
-          sport,
-          avgHeight,
-          avgWeight,
-          avgAge,
-          medalCount,
-          isDominant: countryDominant.get(country) === sport,
-        });
+        result.push({ country, sport, avgHeight, avgWeight, avgAge, medalCount, isDominant: countryDominant.get(country) === sport });
       });
     });
-
     return result;
   }, [data, sexFilter]);
 
-  if (loading) {
-    return (
-      <Container className="text-center mt-5">
-        <Spinner animation="border" variant="primary" />
-        <p className="mt-2">Chargement des données...</p>
-      </Container>
-    );
-  }
+  const selectStyles = {
+    classNamePrefix: "rs",
+    className: "olympic-select",
+  };
+
+  if (loading) return (
+    <div className="loading-screen">
+      <Rings />
+      <div style={{ width: 36, height: 36, border: "3px solid rgba(255,255,255,0.1)", borderTopColor: "#0085C7", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+      <p className="loading-label">Chargement des données</p>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
 
   return (
-    <Container fluid className="px-4">
-      <div className="data-container text-center mb-4">
-        <h2>Profil physique des médaillés par nation</h2>
-        <p className="text-muted">
-          Comparez les caractéristiques physiques moyennes des médaillés selon les nations et les sports.
-          La taille des bulles est proportionnelle au nombre de médaillés. Les bulles bleues indiquent le sport dominant d'une nation.
-        </p>
-      </div>
+    <div className="page-wrapper">
+      <Container fluid style={{ maxWidth: 1400, padding: "0 20px" }}>
 
-      <Row>
-        <Col lg={3}>
-          <div className="data-container mb-3">
-            <h5>Filtres</h5>
+        <div className="page-hero">
+          <Rings />
+          <h1 className="page-hero-title">Profil physique des médaillés par nation</h1>
+          <p className="page-hero-sub">
+            Comparez les caractéristiques physiques moyennes selon les nations et les sports. La taille des bulles reflète le nombre de médailles. Les bulles bleues indiquent le sport dominant d'une nation.
+          </p>
+        </div>
 
-            <Form.Label className="mt-2">Sport</Form.Label>
-            {/* <Form.Control
-              size="sm"
-              type="text"
-              placeholder="Rechercher un sport..."
-              value={sportSearch}
-              onChange={(e) => setSportSearch(e.target.value)}
-              className="mb-1"
-            /> */}
-            <Select
-              options={sports
-                .filter((s) => s.toLowerCase().includes(sportSearch.toLowerCase()))
-                .map((s) => ({ value: s, label: s }))}
-              placeholder="Tous les sports"
-              isClearable
-              isSearchable
-              onChange={(opt) => setSelectedSport(opt as Option | null)}
-              value={selectedSport}
-            />
+        <Row className="g-3">
 
-            <Form.Label className="mt-3">Pays</Form.Label>
-            {/* <Form.Control
-              size="sm"
-              type="text"
-              placeholder="Rechercher un pays..."
-              value={countrySearch}
-              onChange={(e) => setCountrySearch(e.target.value)}
-              className="mb-1"
-            /> */}
-            <Select
-              options={countries
-                .filter((c) => c.toLowerCase().includes(countrySearch.toLowerCase()))
-                .map((c) => ({ value: c, label: c }))}
-              placeholder="Tous les pays"
-              isClearable
-              isSearchable
-              onChange={(opt) => setSelectedCountry(opt as Option | null)}
-              value={selectedCountry}
-            />
-
-            <Form.Label className="mt-3">Sexe</Form.Label>
-            <Form.Select
-              size="sm"
-              value={sexFilter}
-              onChange={(e) => setSexFilter(e.target.value)}
-            >
-              <option value="">Tous</option>
-              <option value="M">Hommes</option>
-              <option value="F">Femmes</option>
-            </Form.Select>
-          </div>
-
-          <div className="data-container">
-            <h6>Lecture du graphique</h6>
-            <small className="text-muted">
-              <div className="d-flex align-items-center mb-1">
-                <div style={{ width: 12, height: 12, backgroundColor: "#4a90d9", borderRadius: "50%", marginRight: 6 }} />
-                Sport dominant de la nation
+          <Col lg={3}>
+            <div className="panel">
+              <span className="section-label">Sport</span>
+              <div className="mb-3">
+                <Select
+                  {...selectStyles}
+                  options={sports.filter((s) => s.toLowerCase().includes(sportSearch.toLowerCase())).map((s) => ({ value: s, label: s }))}
+                  placeholder="Tous les sports"
+                  isClearable isSearchable
+                  onChange={(opt) => setSelectedSport(opt as Option | null)}
+                  value={selectedSport}
+                />
               </div>
-              <div className="d-flex align-items-center mb-1">
-                <div style={{ width: 12, height: 12, backgroundColor: "#bbb", borderRadius: "50%", marginRight: 6 }} />
-                Autre sport
-              </div>
-              <p className="mt-2 mb-0">La taille du cercle represente le nombre de médailles obtenues.</p>
-            </small>
-          </div>
-        </Col>
 
-        <Col lg={9}>
-          <div className="data-container text-center">
-            {bubbleData.length === 0 ? (
-              <p className="text-muted mt-4">Aucune donnée disponible pour les critères sélectionnés.</p>
-            ) : (
-              <ScatterPlot
-                data={bubbleData}
-                highlightSport={selectedSport?.value || null}
-                highlightCountry={selectedCountry?.value || null}
-              />
-            )}
-          </div>
-        </Col>
-      </Row>
-    </Container>
+              <span className="section-label">Pays</span>
+              <div className="mb-3">
+                <Select
+                  {...selectStyles}
+                  options={countries.filter((c) => c.toLowerCase().includes(countrySearch.toLowerCase())).map((c) => ({ value: c, label: c }))}
+                  placeholder="Tous les pays"
+                  isClearable isSearchable
+                  onChange={(opt) => setSelectedCountry(opt as Option | null)}
+                  value={selectedCountry}
+                />
+              </div>
+
+              <span className="section-label">Sexe</span>
+              <div className="sex-pills mb-4">
+                {[
+                  { v: "", label: "Tous", cls: "active-all" },
+                  { v: "M", label: "Hommes", cls: "active-M" },
+                  { v: "F", label: "Femmes", cls: "active-F" },
+                ].map(({ v, label, cls }) => (
+                  <button
+                    key={v}
+                    className={`sex-pill ${sexFilter === v ? cls : ""}`}
+                    onClick={() => setSexFilter(v)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              <hr className="oly-divider" />
+
+              <span className="section-label">Lecture du graphique</span>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 6 }}>
+                <div className="legend-card">
+                  <div className="legend-dot-circle" style={{ background: "#0085C7" }} />
+                  Sport dominant de la nation
+                </div>
+                <div className="legend-card">
+                  <div className="legend-dot-circle" style={{ background: "rgba(255,255,255,0.2)" }} />
+                  Autre sport
+                </div>
+                <p style={{ fontSize: "0.77rem", color: "var(--text)", marginTop: 4, marginBottom: 0 }}>
+                  La taille du cercle est proportionnelle au nombre de médailles.
+                </p>
+              </div>
+            </div>
+          </Col>
+
+          <Col lg={9}>
+            <div className="panel">
+              {bubbleData.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-icon" aria-hidden="true" />
+                  <p style={{ fontSize: "0.88rem" }}>Aucune donnée pour les critères sélectionnés.</p>
+                </div>
+              ) : (
+                <ScatterPlot
+                  data={bubbleData}
+                  highlightSport={selectedSport?.value || null}
+                  highlightCountry={selectedCountry?.value || null}
+                />
+              )}
+            </div>
+          </Col>
+        </Row>
+      </Container>
+    </div>
   );
 };
 

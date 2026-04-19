@@ -1,28 +1,64 @@
+import { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { Navbar } from "react-bootstrap";
-import { Container, Nav } from "react-bootstrap";
+
+const links = [
+  { to: "/", label: "Évolution" },
+  { to: "/nations", label: "Nations" },
+  { to: "/user", label: "Me comparer" },
+  { to: "/map", label: "Carte mondiale" },
+];
+
+const MiniRings = () => (
+  <span className="mini-rings" aria-hidden="true">
+    <span className="mini-ring" />
+    <span className="mini-ring" />
+    <span className="mini-ring" />
+    <span className="mini-ring" />
+    <span className="mini-ring" />
+  </span>
+);
 
 const HeaderBar = () => {
-    return (
-    <Navbar bg="dark" data-bs-theme="dark" expand="lg">
-      <Container fluid>
-        <Navbar.Brand as={NavLink} to="/">
-            <Container>
-              <h1>Le Miroir Olympique</h1>
-            </Container>
-        </Navbar.Brand>
-        <Navbar.Toggle aria-controls="main-nav" />
-        <Navbar.Collapse id="main-nav">
-          <Nav className="me-auto">
-              <Nav.Link as={NavLink} to="/">Évolution</Nav.Link>
-              <Nav.Link as={NavLink} to="/nations">Nations</Nav.Link>
-              <Nav.Link as={NavLink} to="/user">Me comparer</Nav.Link>
-              <Nav.Link as={NavLink} to="/map">Carte mondiale</Nav.Link>
-          </Nav>
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
-  );
+  const [isOpen, setIsOpen] = useState(false);
 
-}
+  return (
+    <nav className="oly-nav" aria-label="Navigation principale">
+      <div className="oly-nav-inner">
+        <NavLink to="/" className="brand-mark" onClick={() => setIsOpen(false)}>
+          <MiniRings />
+          <span className="brand-copy">
+            <span className="brand-title">Le Miroir Olympique</span>
+            <span className="brand-subtitle">Data stories des Jeux</span>
+          </span>
+        </NavLink>
+
+        <button
+          className="nav-menu-button"
+          type="button"
+          aria-label="Ouvrir le menu"
+          aria-expanded={isOpen}
+          onClick={() => setIsOpen((open) => !open)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+
+        <div className={`nav-links ${isOpen ? "open" : ""}`}>
+          {links.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              className="nav-link-item"
+              onClick={() => setIsOpen(false)}
+            >
+              {link.label}
+            </NavLink>
+          ))}
+        </div>
+      </div>
+    </nav>
+  );
+};
+
 export default HeaderBar;

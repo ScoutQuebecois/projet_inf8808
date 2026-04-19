@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
+import { THEME, applyTooltipStyle, styleAxis, addGrid } from "./charttheme";
 
 export interface SeriesData {
   sport: string;
@@ -25,28 +26,12 @@ const LineChart = ({
   nonMedalData,
   showNonMedal,
 }: LineChartProps) => {
-  const svgRef = useRef<SVGSVGElement | null>(null);
+  const svgRef   = useRef<SVGSVGElement | null>(null);
   const tooltipRef = useRef<d3.Selection<HTMLDivElement, unknown, HTMLElement, any> | null>(null);
 
   useEffect(() => {
-    tooltipRef.current = d3
-      .select("body")
-      .append("div")
-      .attr("class", "line-tooltip")
-      .style("position", "absolute")
-      .style("background", "white")
-      .style("border", "1px solid #ccc")
-      .style("padding", "8px 12px")
-      .style("border-radius", "6px")
-      .style("pointer-events", "none")
-      .style("opacity", 0)
-      .style("font-size", "12px")
-      .style("box-shadow", "0 2px 6px rgba(0,0,0,0.15)")
-      .style("z-index", "1000");
-
-    return () => {
-      tooltipRef.current?.remove();
-    };
+    tooltipRef.current = applyTooltipStyle(d3.select("body").append("div"));
+    return () => { tooltipRef.current?.remove(); };
   }, []);
 
   useEffect(() => {
@@ -55,61 +40,61 @@ const LineChart = ({
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
 
-    const width = 520;
-    const height = 320;
-    const margin = { top: 30, right: 100, bottom: 70, left: 55 };
-    const innerW = width - margin.left - margin.right;
-    const innerH = height - margin.top - margin.bottom;
+    const width  = 520;
+    const height = 300;
+    const margin = { top: 36, right: 24, bottom: 52, left: 52 };
+    const innerW = width  - margin.left - margin.right;
+    const innerH = height - margin.top  - margin.bottom;
 
-    const g = svg
+    svg
       .attr("width", width)
       .attr("height", height)
-      .append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
+      .style("background", THEME.bg1)
+      .style("border-radius", "8px");
 
-    const allValues = data.flatMap((s) => s.values);
+    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const allValues      = data.flatMap((s) => s.values);
     const nonMedalValues = showNonMedal && nonMedalData ? nonMedalData.flatMap((s) => s.values) : [];
-    const combined = [...allValues, ...nonMedalValues];
+    const combined       = [...allValues, ...nonMedalValues];
 
     const xExtent = d3.extent(combined, (d) => d.year) as [number, number];
     const yExtent = d3.extent(combined, (d) => d.value) as [number, number];
-    const yPad = (yExtent[1] - yExtent[0]) * 0.1 || 5;
+    const yPad    = (yExtent[1] - yExtent[0]) * 0.12 || 5;
 
     const xScale = d3.scaleLinear().domain(xExtent).range([0, innerW]);
-    const yScale = d3
-      .scaleLinear()
-      .domain([yExtent[0] - yPad, yExtent[1] + yPad])
-      .range([innerH, 0]);
+    const yScale = d3.scaleLinear().domain([yExtent[0] - yPad, yExtent[1] + yPad]).range([innerH, 0]);
 
-    g.append("g")
+    addGrid(g, yScale, innerW, 5);
+
+    const xAxis = g.append("g")
       .attr("transform", `translate(0,${innerH})`)
-      .call(d3.axisBottom(xScale).tickFormat(d3.format("d")).ticks(5))
-      .selectAll("text")
-      .style("font-size", "10px");
+      .call(d3.axisBottom(xScale).tickFormat(d3.format("d")).ticks(5));
+    styleAxis(xAxis as any);
 
-    g.append("g")
-      .call(d3.axisLeft(yScale).ticks(6))
-      .selectAll("text")
-      .style("font-size", "11px");
+    const yAxis = g.append("g").call(d3.axisLeft(yScale).ticks(5));
+    styleAxis(yAxis as any);
 
     g.append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", -45)
-      .attr("x", -innerH / 2)
+      .attr("y", -42).attr("x", -innerH / 2)
       .attr("text-anchor", "middle")
-      .style("font-size", "12px")
-      .text(yLabel);
+      .style("fill", THEME.text)
+      .style("font-family", THEME.fontBody)
+      .style("font-size", "10px")
+      .style("letter-spacing", "0.06em")
+      .text(yLabel.toUpperCase());
 
     g.append("text")
-      .attr("x", innerW / 2)
-      .attr("y", -10)
+      .attr("x", innerW / 2).attr("y", -16)
       .attr("text-anchor", "middle")
-      .style("font-size", "14px")
-      .style("font-weight", "bold")
+      .style("fill", THEME.text)
+      .style("font-family", THEME.fontBody)
+      .style("font-size", "12px")
+      .style("font-weight", "600")
       .text(title);
 
-    const line = d3
-      .line<{ year: number; value: number }>()
+    const line = d3.line<{ year: number; value: number }>()
       .x((d) => xScale(d.year))
       .y((d) => yScale(d.value))
       .curve(d3.curveMonotoneX);
@@ -121,70 +106,81 @@ const LineChart = ({
           .datum(series.values)
           .attr("fill", "none")
           .attr("stroke", color)
-          .attr("stroke-width", 1.5)
-          .attr("stroke-dasharray", "5,5")
-          .attr("opacity", 0.6)
+          .attr("stroke-width", 1.2)
+          .attr("stroke-dasharray", "5,4")
+          .attr("opacity", 0.4)
           .attr("d", line);
       });
     }
 
     data.forEach((series) => {
-      const color = colorScale(series.sport);
+      const color        = colorScale(series.sport);
       const isHighlighted = !highlightedSport || highlightedSport === series.sport;
+      const opacity       = isHighlighted ? 1 : 0.2;
 
       g.append("path")
         .datum(series.values)
         .attr("fill", "none")
         .attr("stroke", color)
-        .attr("stroke-width", isHighlighted ? 2.5 : 1.5)
-        .attr("opacity", isHighlighted ? 1 : 0.3)
+        .attr("stroke-width", isHighlighted ? 2.2 : 1.2)
+        .attr("opacity", opacity)
         .attr("d", line);
 
-      g.selectAll(`.dot-${series.sport.replace(/\s+/g, "-")}`)
+      g.selectAll(`.dot-${series.sport.replace(/[^a-zA-Z0-9]/g, "-")}`)
         .data(series.values)
         .enter()
         .append("circle")
         .attr("cx", (d) => xScale(d.year))
         .attr("cy", (d) => yScale(d.value))
-        .attr("r", 3)
+        .attr("r", 2.5)
         .attr("fill", color)
-        .attr("opacity", isHighlighted ? 0.8 : 0.2)
+        .attr("opacity", isHighlighted ? 0.85 : 0.15)
         .on("mouseover", function (event, d) {
           d3.select(this).attr("r", 5).attr("opacity", 1);
           tooltipRef.current
-            ?.style("opacity", 1)
+            ?.style("opacity", "1")
             .html(
-              `<strong>${series.sport}</strong><br/>Année: ${d.year}<br/>${yLabel}: ${d.value.toFixed(1)}`
+              `<span style="color:${color};font-weight:600">${series.sport}</span><br/>
+               <span style="color:${THEME.text};font-size:10px">ANNÉE</span> ${d.year}<br/>
+               <span style="color:${THEME.text};font-size:10px">${yLabel.toUpperCase()}</span> <strong>${d.value.toFixed(1)}</strong>`
             )
-            .style("left", `${event.pageX + 12}px`)
-            .style("top", `${event.pageY - 30}px`);
+            .style("left", `${event.pageX + 14}px`)
+            .style("top",  `${event.pageY - 36}px`);
         })
         .on("mousemove", function (event) {
           tooltipRef.current
-            ?.style("left", `${event.pageX + 12}px`)
-            .style("top", `${event.pageY - 30}px`);
+            ?.style("left", `${event.pageX + 14}px`)
+            .style("top",  `${event.pageY - 36}px`);
         })
         .on("mouseout", function () {
-          d3.select(this).attr("r", 3).attr("opacity", isHighlighted ? 0.8 : 0.2);
-          tooltipRef.current?.style("opacity", 0);
+          d3.select(this).attr("r", 2.5).attr("opacity", isHighlighted ? 0.85 : 0.15);
+          tooltipRef.current?.style("opacity", "0");
         });
     });
 
     if (showNonMedal && nonMedalData && nonMedalData.length > 0) {
-      const legendY = innerH + 35;
-      const legendG = g.append("g").attr("transform", `translate(${innerW - 200}, ${legendY - 45})`);
+      const lgY = innerH + 32;
+      const lgG = g.append("g").attr("transform", `translate(${innerW - 170},${lgY})`);
 
-      legendG.append("line").attr("x1", 0).attr("x2", 20).attr("y1", 0).attr("y2", 0)
-        .attr("stroke", "#666").attr("stroke-width", 2);
-      legendG.append("text").attr("x", 25).attr("y", 4).text("Medaillés").style("font-size", "10px");
-
-      legendG.append("line").attr("x1", 0).attr("x2", 20).attr("y1", 15).attr("y2", 15)
-        .attr("stroke", "#666").attr("stroke-width", 1.5).attr("stroke-dasharray", "5,5");
-      legendG.append("text").attr("x", 25).attr("y", 19).text("Non médaillés").style("font-size", "10px");
+      const items = [
+        { dash: "", label: "Médaillés", opacity: 1 },
+        { dash: "5,4", label: "Non médaillés", opacity: 0.5 },
+      ];
+      items.forEach(({ dash, label, opacity }, i) => {
+        const gx = lgG.append("g").attr("transform", `translate(${i * 88},0)`);
+        gx.append("line")
+          .attr("x1", 0).attr("x2", 18).attr("y1", 0).attr("y2", 0)
+          .attr("stroke", THEME.text).attr("stroke-width", 1.5)
+          .attr("stroke-dasharray", dash).attr("opacity", opacity);
+        gx.append("text")
+          .attr("x", 22).attr("y", 4)
+          .style("fill", THEME.text).style("font-family", THEME.fontBody).style("font-size", "9px")
+          .text(label);
+      });
     }
   }, [data, title, yLabel, colorScale, highlightedSport, nonMedalData, showNonMedal]);
 
-  return <svg ref={svgRef} />;
+  return <svg ref={svgRef} style={{ display: "block", width: "100%" }} />;
 };
 
 export default LineChart;
