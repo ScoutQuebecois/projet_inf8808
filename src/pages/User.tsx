@@ -4,14 +4,9 @@ import { useState, useEffect, useMemo } from "react";
 import { Option } from "../types/Options";
 import { loadAthleteData } from "../utils/dataLoader";
 import Select from "react-select";
+import OlympicLogo from "../components/OlympicLogo";
 
-const Rings = () => (
-  <div className="rings-row">
-    {["#0085C7","#F4C300","rgba(255,255,255,0.3)","#009F6B","#DF0024"].map((c, i) => (
-      <div key={i} className="ring-pip" style={{ borderColor: c }} />
-    ))}
-  </div>
-);
+const Rings = () => <OlympicLogo className="rings-row" decorative />;
 
 const NumberInput = ({
   label, unit, value, onChange, placeholder,

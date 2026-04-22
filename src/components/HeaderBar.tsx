@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import OlympicLogo from "./OlympicLogo";
 
 const links = [
   { to: "/", label: "Évolution" },
@@ -8,16 +9,6 @@ const links = [
   { to: "/map", label: "Carte mondiale" },
 ];
 
-const MiniRings = () => (
-  <span className="mini-rings" aria-hidden="true">
-    <span className="mini-ring" />
-    <span className="mini-ring" />
-    <span className="mini-ring" />
-    <span className="mini-ring" />
-    <span className="mini-ring" />
-  </span>
-);
-
 const HeaderBar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -25,7 +16,7 @@ const HeaderBar = () => {
     <nav className="oly-nav" aria-label="Navigation principale">
       <div className="oly-nav-inner">
         <NavLink to="/" className="brand-mark" onClick={() => setIsOpen(false)}>
-          <MiniRings />
+          <OlympicLogo className="mini-rings" decorative />
           <span className="brand-copy">
             <span className="brand-title">Le Miroir Olympique</span>
             <span className="brand-subtitle">Data stories des Jeux</span>

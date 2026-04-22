@@ -157,57 +157,11 @@ main {
 
 .mini-rings,
 .rings-row {
-  display: inline-grid;
-  grid-template-columns: repeat(3, 18px);
-  grid-template-rows: repeat(2, 14px);
+  display: block;
   width: 60px;
   height: 34px;
   flex: 0 0 auto;
-}
-
-.ring-pip,
-.mini-ring {
-  width: 23px;
-  height: 23px;
-  border: 3px solid currentColor;
-  border-radius: 50%;
-}
-
-.mini-ring:nth-child(1),
-.rings-row .ring-pip:nth-child(1) {
-  color: var(--olympic-blue);
-  grid-column: 1;
-  grid-row: 1;
-}
-
-.mini-ring:nth-child(2),
-.rings-row .ring-pip:nth-child(2) {
-  color: var(--olympic-yellow);
-  grid-column: 1 / span 2;
-  grid-row: 2;
-  margin-left: 12px;
-}
-
-.mini-ring:nth-child(3),
-.rings-row .ring-pip:nth-child(3) {
-  color: rgba(36, 48, 68, 0.72);
-  grid-column: 2;
-  grid-row: 1;
-}
-
-.mini-ring:nth-child(4),
-.rings-row .ring-pip:nth-child(4) {
-  color: var(--olympic-green);
-  grid-column: 2 / span 2;
-  grid-row: 2;
-  margin-left: 12px;
-}
-
-.mini-ring:nth-child(5),
-.rings-row .ring-pip:nth-child(5) {
-  color: var(--olympic-red);
-  grid-column: 3;
-  grid-row: 1;
+  object-fit: contain;
 }
 
 .nav-menu-button {

@@ -3,19 +3,14 @@ import { Container, Row, Col } from "react-bootstrap";
 import * as d3 from "d3";
 import Select from "react-select";
 import ChoroplethMap, { CountryIMCData } from "../components/ChoroplethMap";
+import OlympicLogo from "../components/OlympicLogo";
 import TrendLineChart, { YearlyIMC } from "../components/TrendLineChart";
 import { Athlete } from "../types/Athlete";
 import { Option } from "../types/Options";
 import { loadAthleteData } from "../utils/dataLoader";
 import { nocToIso } from "../utils/nocMapping";
 
-const Rings = () => (
-  <div className="rings-row">
-    {["#0085C7","#F4C300","rgba(255,255,255,0.3)","#009F6B","#DF0024"].map((c, i) => (
-      <div key={i} className="ring-pip" style={{ borderColor: c }} />
-    ))}
-  </div>
-);
+const Rings = () => <OlympicLogo className="rings-row" decorative />;
 
 const MapView = () => {
   const [data, setData] = useState<Athlete[]>([]);

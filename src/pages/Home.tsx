@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { Container, Row, Col, Form } from "react-bootstrap";
 import * as d3 from "d3";
 import LineChart, { SeriesData } from "../components/LineChart";
+import OlympicLogo from "../components/OlympicLogo";
 import { Athlete } from "../types/Athlete";
 import { loadAthleteData } from "../utils/dataLoader";
 
@@ -16,19 +17,7 @@ interface SportStats {
   stdAge: number;
 }
 
-const RING_COLORS = ["#0085C7", "#F4C300", "#222", "#009F6B", "#DF0024"];
-
-const Rings = () => (
-  <div className="rings-row">
-    {RING_COLORS.map((c, i) => (
-      <div
-        key={i}
-        className="ring-pip"
-        style={{ color: c, borderColor: i === 2 ? "rgba(255,255,255,0.3)" : c }}
-      />
-    ))}
-  </div>
-);
+const Rings = () => <OlympicLogo className="rings-row" decorative />;
 
 const SeasonToggle = ({
   value, current, label, accent, onClick,
