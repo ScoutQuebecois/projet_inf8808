@@ -35,7 +35,7 @@ function buildChoroplethAltText(
   const fmt = (v: number) => `${v >= 0 ? "+" : ""}${v.toFixed(3)}`;
 
   const parts = [
-    `Carte choroplèthe mondiale : variation d'IMC ajusté par l'âge (IMC × âge / 25) entre la première et la dernière participation aux Jeux olympiques, pour le sport ${sportName}.`,
+    `Carte choroplèthe mondiale : variation d'IMC ajusté par l'âge (IMC × âge / 25) entre la première et la dernière participation aux Jeux Olympiques, pour le sport ${sportName}.`,
     `${data.length} pays disposent de données suffisantes (au moins deux éditions).`,
     `${positive.length} pays affichent une hausse (en bleu), ${negative.length} une baisse (en orange).`,
     `Hausse la plus forte : ${highest.country} (${fmt(highest.delta)}).`,

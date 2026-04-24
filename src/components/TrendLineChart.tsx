@@ -29,7 +29,7 @@ function buildTrendLineAltText(data: YearlyIMC[], country: string, sport: string
 
     return [
         `Courbe d'évolution de l'IMC ajusté par l'âge pour ${country} en ${sport}.`,
-        `Période couverte : de ${first.year} à ${last.year}, soit ${sorted.length} éditions des Jeux olympiques.`,
+        `Période couverte : de ${first.year} à ${last.year}, soit ${sorted.length} éditions des Jeux Olympiques.`,
         `L'IMC ajusté passe de ${first.imc.toFixed(3)} à ${last.imc.toFixed(3)}, une variation de ${delta >= 0 ? "+" : ""}${delta.toFixed(3)}.`,
         `Les valeurs s'étendent de ${imcMin} (minimum) à ${imcMax} (maximum).`,
         `La droite de régression en pointillés orange indique ${trend} sur la période.`,

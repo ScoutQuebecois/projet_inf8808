@@ -7,7 +7,7 @@ const OlympicLogo = ({ className = "", decorative = false }: OlympicLogoProps) =
   <img
     className={`olympic-logo ${className}`.trim()}
     src="/images/logo-jo.png"
-    alt={decorative ? "" : "Logo des Jeux olympiques"}
+    alt={decorative ? "" : "Logo des Jeux Olympiques"}
     aria-hidden={decorative || undefined}
   />
 );
