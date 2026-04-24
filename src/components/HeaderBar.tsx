@@ -6,8 +6,8 @@ import { useAltTextVisibility } from "./AltTextContext";
 const links = [
   { to: "/", label: "Évolution" },
   { to: "/nations", label: "Nations" },
-  { to: "/user", label: "Me comparer" },
   { to: "/map", label: "Carte mondiale" },
+  { to: "/user", label: "Me comparer" },
 ];
 
 const HeaderBar = () => {

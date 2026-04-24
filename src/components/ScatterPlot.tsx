@@ -253,8 +253,8 @@ const ScatterPlot = ({ data, highlightSport, highlightCountry, sexFilter }: Scat
 
     const lgG2 = g.append("g").attr("transform", `translate(10, ${innerH + 38})`);
     [
-      { color: THEME.blue,                         label: "Sport dominant" },
-      { color: "rgba(255,255,255,0.18)",            label: "Autre sport" },
+      { color: THEME.blue, label: "Sport dominant" },
+      { color: "rgba(255,255,255,0.18)", label: "Autre sport" },
     ].forEach(({ color, label }, i) => {
       const gx = lgG2.append("g").attr("transform", `translate(${i * 130},0)`);
       gx.append("circle").attr("cx", 5).attr("cy", -4).attr("r", 5)
