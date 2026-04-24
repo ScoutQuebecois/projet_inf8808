@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { THEME, applyTooltipStyle, styleAxis, addGrid } from "./charttheme";
+import { useAltTextVisibility } from "./AltTextContext";
 
 export interface SeriesData {
   sport: string;
@@ -15,6 +16,69 @@ interface LineChartProps {
   highlightedSport?: string | null;
   nonMedalData?: SeriesData[];
   showNonMedal?: boolean;
+  medalOnly?: boolean;
+  seasonFilter?: "all" | "summer" | "winter";
+  sortMetric?: "height" | "weight" | "age";
+}
+
+function buildLineChartAltText(
+  data: SeriesData[],
+  title: string,
+  yLabel: string,
+  highlightedSport?: string | null,
+  nonMedalData?: SeriesData[],
+  showNonMedal?: boolean,
+  medalOnly?: boolean,
+  seasonFilter?: "all" | "summer" | "winter",
+) {
+  if (!data.length) {
+    return `Graphique en courbes : ${title}. Aucune donnée disponible pour l'indicateur ${yLabel}.`;
+  }
+
+  const allValues = data.flatMap((s) => s.values);
+  const years = allValues.map((d) => d.year);
+  const values = allValues.map((d) => d.value);
+  const yearMin = d3.min(years);
+  const yearMax = d3.max(years);
+  const valMin = d3.min(values)?.toFixed(1);
+  const valMax = d3.max(values)?.toFixed(1);
+
+  const topSeries = [...data]
+    .map((s) => ({
+      sport: s.sport,
+      latest: s.values[s.values.length - 1]?.value ?? -Infinity,
+    }))
+    .sort((a, b) => b.latest - a.latest)
+    .slice(0, 3);
+
+  const seasonLabel =
+    seasonFilter === "summer" ? "jeux d'été"
+    : seasonFilter === "winter" ? "jeux d'hiver"
+    : "toutes saisons confondues";
+
+  const parts = [
+    `Graphique en courbes : ${title} — ${yLabel}.`,
+    `${data.length} sport${data.length > 1 ? "s" : ""} affiché${data.length > 1 ? "s" : ""}, ${seasonLabel}, de ${yearMin} à ${yearMax}.`,
+    medalOnly === false
+      ? "Données incluant tous les athlètes, médaillés et non médaillés."
+      : "Données limitées aux athlètes médaillés.",
+    `Les valeurs de ${yLabel} s'étendent de ${valMin} à ${valMax}.`,
+    `Sports avec les valeurs les plus élevées en fin de période : ${topSeries
+      .map((s) => `${s.sport} (${s.latest.toFixed(1)})`)
+      .join(", ")}.`,
+  ];
+
+  if (highlightedSport) {
+    parts.push(`Sport mis en évidence : ${highlightedSport}.`);
+  }
+
+  if (showNonMedal && nonMedalData?.length) {
+    parts.push(
+      "Des courbes en pointillés représentent les athlètes non médaillés pour comparaison directe."
+    );
+  }
+
+  return parts.join(" ");
 }
 
 const LineChart = ({
@@ -25,9 +89,13 @@ const LineChart = ({
   highlightedSport,
   nonMedalData,
   showNonMedal,
+  medalOnly,
+  seasonFilter,
 }: LineChartProps) => {
   const svgRef   = useRef<SVGSVGElement | null>(null);
   const tooltipRef = useRef<d3.Selection<HTMLDivElement, unknown, HTMLElement, any> | null>(null);
+  const { showAltText } = useAltTextVisibility();
+  const altText = buildLineChartAltText(data, title, yLabel, highlightedSport, nonMedalData, showNonMedal, medalOnly, seasonFilter);
 
   useEffect(() => {
     tooltipRef.current = applyTooltipStyle(d3.select("body").append("div"));
@@ -180,7 +248,15 @@ const LineChart = ({
     }
   }, [data, title, yLabel, colorScale, highlightedSport, nonMedalData, showNonMedal]);
 
-  return <svg ref={svgRef} style={{ display: "block", width: "100%" }} />;
+  return (
+    <figure className="chart-with-alt">
+      <svg
+        ref={svgRef}
+        style={{ display: "block", width: "100%" }}
+      />
+      {showAltText && <figcaption className="chart-alt-text">{altText}</figcaption>}
+    </figure>
+  );
 };
 
 export default LineChart;

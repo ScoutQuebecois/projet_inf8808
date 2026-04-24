@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { THEME, applyTooltipStyle } from "./charttheme";
+import { useAltTextVisibility } from "./AltTextContext";
 
 export interface CountryIMCData {
   country: string;
@@ -17,9 +18,49 @@ interface ChoroplethMapProps {
 
 const WORLD_GEOJSON_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
+function buildChoroplethAltText(
+  data: CountryIMCData[],
+  selectedCountry: string | null,
+  sportName: string,
+) {
+  if (!data.length) {
+    return `Carte choroplèthe mondiale pour le sport ${sportName}. Aucune donnée disponible.`;
+  }
+
+  const sorted = [...data].sort((a, b) => b.delta - a.delta);
+  const positive = data.filter((d) => d.delta > 0);
+  const negative = data.filter((d) => d.delta < 0);
+  const highest = sorted[0];
+  const lowest = sorted[sorted.length - 1];
+  const fmt = (v: number) => `${v >= 0 ? "+" : ""}${v.toFixed(3)}`;
+
+  const parts = [
+    `Carte choroplèthe mondiale : variation d'IMC ajusté par l'âge (IMC × âge / 25) entre la première et la dernière participation aux Jeux olympiques, pour le sport ${sportName}.`,
+    `${data.length} pays disposent de données suffisantes (au moins deux éditions).`,
+    `${positive.length} pays affichent une hausse (en bleu), ${negative.length} une baisse (en orange).`,
+    `Hausse la plus forte : ${highest.country} (${fmt(highest.delta)}).`,
+    `Baisse la plus forte : ${lowest.country} (${fmt(lowest.delta)}).`,
+    `Cliquez sur un pays pour afficher sa courbe d'évolution détaillée.`,
+  ];
+
+  if (selectedCountry) {
+    const entry = data.find((d) => d.country === selectedCountry);
+    const detail = entry
+      ? ` Sa variation d'IMC ajusté est de ${fmt(entry.delta)}.`
+      : "";
+    parts.push(`Pays actuellement sélectionné : ${selectedCountry}.${detail} La courbe d'évolution est affichée sous la carte.`);
+  } else {
+    parts.push("Aucun pays sélectionné. Cliquez sur un pays pour afficher sa courbe d'évolution.");
+  }
+
+  return parts.join(" ");
+}
+
 const ChoroplethMap = ({ data, onCountryClick, selectedCountry, sportName }: ChoroplethMapProps) => {
   const svgRef     = useRef<SVGSVGElement | null>(null);
   const tooltipRef = useRef<d3.Selection<HTMLDivElement, unknown, HTMLElement, any> | null>(null);
+  const { showAltText } = useAltTextVisibility();
+  const altText = buildChoroplethAltText(data, selectedCountry, sportName);
 
   useEffect(() => {
     tooltipRef.current = applyTooltipStyle(d3.select("body").append("div"));
@@ -228,7 +269,15 @@ const ChoroplethMap = ({ data, onCountryClick, selectedCountry, sportName }: Cho
     });
   }, [data, selectedCountry, sportName]);
 
-  return <svg ref={svgRef} style={{ display: "block", width: "100%" }} />;
+  return (
+    <figure className="chart-with-alt">
+      <svg
+        ref={svgRef}
+        style={{ display: "block", width: "100%" }}
+      />
+      {showAltText && <figcaption className="chart-alt-text">{altText}</figcaption>}
+    </figure>
+  );
 };
 
 function numericToIso3(id: string | number): string {

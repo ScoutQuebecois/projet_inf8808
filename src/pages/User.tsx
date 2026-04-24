@@ -73,9 +73,9 @@ const User = () => {
   );
 
   const hasUserData = userHeight || userWeight || userAge;
-  const userBMI = userHeight && userWeight
-    ? (userWeight / ((userHeight / 100) ** 2)).toFixed(1)
-    : null;
+  const userBMI: number | null = userHeight && userWeight
+  ? (userWeight / ((userHeight / 100) ** 2))
+  : null;
 
   const sexConfig = [
     { v: "", label: "Tous", cls: "active-all" },
@@ -110,7 +110,7 @@ const User = () => {
               {hasUserData && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {userBMI && (
-                    <StatHighlight label="Votre IMC" value={userBMI} color="#F4C300" />
+                    <StatHighlight label="Votre IMC" value={userBMI.toFixed(1)} color="#F4C300" />
                   )}
                   {userHeight && (
                     <StatHighlight label="Taille" value={`${userHeight} cm`} color="#0085C7" />
@@ -182,6 +182,7 @@ const User = () => {
                       userSport={selectedOption.value}
                       type="height"
                       sexe={radioValue}
+                      userBMI={userBMI}
                     />
                   </Col>
                   <Col lg={6}>
@@ -191,6 +192,7 @@ const User = () => {
                       userSport={selectedOption.value}
                       type="weight"
                       sexe={radioValue}
+                      userBMI={userBMI}
                     />
                   </Col>
                   <Col lg={6}>
@@ -200,6 +202,7 @@ const User = () => {
                       userSport={selectedOption.value}
                       type="age"
                       sexe={radioValue}
+                      userBMI={userBMI}
                     />
                   </Col>
                 </Row>

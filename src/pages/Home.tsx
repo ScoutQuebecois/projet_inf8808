@@ -17,6 +17,29 @@ interface SportStats {
   stdAge: number;
 }
 
+function getTopSports(
+  sportStats: SportStats[],
+  season: SeasonFilter,
+  metric: SortMetric,
+  limit = 10
+) {
+  let filtered = [...sportStats];
+
+  if (season === "summer") {
+    filtered = filtered.filter((s) => s.season === "Summer" || s.season === "Both");
+  } else if (season === "winter") {
+    filtered = filtered.filter((s) => s.season === "Winter" || s.season === "Both");
+  }
+
+  const metricKey =
+    metric === "height" ? "stdHeight" : metric === "weight" ? "stdWeight" : "stdAge";
+
+  return filtered
+    .sort((a, b) => b[metricKey] - a[metricKey])
+    .slice(0, limit)
+    .map((s) => s.sport);
+}
+
 const Rings = () => <OlympicLogo className="rings-row" decorative />;
 
 const SeasonToggle = ({
@@ -88,27 +111,25 @@ const Home = () => {
   }, [data]);
 
   const sortedSports = useMemo(() => {
-    let f = [...sportStats];
-    if (seasonFilter === "summer") f = f.filter((s) => s.season === "Summer" || s.season === "Both");
-    else if (seasonFilter === "winter") f = f.filter((s) => s.season === "Winter" || s.season === "Both");
-    const k = sortMetric === "height" ? "stdHeight" : sortMetric === "weight" ? "stdWeight" : "stdAge";
-    return f.sort((a, b) => b[k] - a[k]);
+    return getTopSports(sportStats, seasonFilter, sortMetric, sportStats.length)
+      .map((sport) => sportStats.find((entry) => entry.sport === sport))
+      .filter((entry): entry is SportStats => entry != null);
   }, [sportStats, seasonFilter, sortMetric]);
 
   const selectTop10 = useCallback((season: SeasonFilter) => {
     setSeasonFilter(season);
-    let f = [...sportStats];
-    if (season === "summer") f = f.filter((s) => s.season === "Summer" || s.season === "Both");
-    else if (season === "winter") f = f.filter((s) => s.season === "Winter" || s.season === "Both");
-    const k = sortMetric === "height" ? "stdHeight" : sortMetric === "weight" ? "stdWeight" : "stdAge";
-    f.sort((a, b) => b[k] - a[k]);
-    setSelectedSports(new Set(f.slice(0, 10).map((s) => s.sport)));
+    setSelectedSports(new Set(getTopSports(sportStats, season, sortMetric)));
   }, [sportStats, sortMetric]);
 
   useEffect(() => {
     if (sortedSports.length > 0 && selectedSports.size === 0)
       setSelectedSports(new Set(sortedSports.slice(0, 10).map((s) => s.sport)));
-  }, [sortedSports]);
+  }, [sortedSports, selectedSports.size]);
+
+  useEffect(() => {
+    if (!sportStats.length) return;
+    setSelectedSports(new Set(getTopSports(sportStats, seasonFilter, sortMetric)));
+  }, [sportStats, seasonFilter, sortMetric]);
 
   const isSingleSport = selectedSports.size === 1;
 
@@ -284,30 +305,30 @@ const Home = () => {
                   <p className="chart-group-label">Taille moyenne (cm)</p>
                   <Row className="mb-4 g-3">
                     <Col md={6}>
-                      <LineChart data={heightM} title="Hommes" yLabel="Taille (cm)" colorScale={colorScale} {...nmProps(nmHM)} />
+                      <LineChart data={heightM} title="Hommes" yLabel="Taille (cm)" colorScale={colorScale} medalOnly={medalOnly} seasonFilter={seasonFilter} {...nmProps(nmHM)} />
                     </Col>
                     <Col md={6}>
-                      <LineChart data={heightF} title="Femmes" yLabel="Taille (cm)" colorScale={colorScale} {...nmProps(nmHF)} />
+                      <LineChart data={heightF} title="Femmes" yLabel="Taille (cm)" colorScale={colorScale} medalOnly={medalOnly} seasonFilter={seasonFilter} {...nmProps(nmHF)} />
                     </Col>
                   </Row>
 
                   <p className="chart-group-label">Poids moyen (kg)</p>
                   <Row className="mb-4 g-3">
                     <Col md={6}>
-                      <LineChart data={weightM} title="Hommes" yLabel="Poids (kg)" colorScale={colorScale} {...nmProps(nmWM)} />
+                      <LineChart data={weightM} title="Hommes" yLabel="Poids (kg)" colorScale={colorScale} medalOnly={medalOnly} seasonFilter={seasonFilter} {...nmProps(nmWM)} />
                     </Col>
                     <Col md={6}>
-                      <LineChart data={weightF} title="Femmes" yLabel="Poids (kg)" colorScale={colorScale} {...nmProps(nmWF)} />
+                      <LineChart data={weightF} title="Femmes" yLabel="Poids (kg)" colorScale={colorScale} medalOnly={medalOnly} seasonFilter={seasonFilter} {...nmProps(nmWF)} />
                     </Col>
                   </Row>
 
                   <p className="chart-group-label">Âge moyen (ans)</p>
                   <Row className="g-3">
                     <Col md={6}>
-                      <LineChart data={ageM} title="Hommes" yLabel="Âge (ans)" colorScale={colorScale} {...nmProps(nmAM)} />
+                      <LineChart data={ageM} title="Hommes" yLabel="Âge (ans)" colorScale={colorScale} medalOnly={medalOnly} seasonFilter={seasonFilter} {...nmProps(nmAM)} />
                     </Col>
                     <Col md={6}>
-                      <LineChart data={ageF} title="Femmes" yLabel="Âge (ans)" colorScale={colorScale} {...nmProps(nmAF)} />
+                      <LineChart data={ageF} title="Femmes" yLabel="Âge (ans)" colorScale={colorScale} medalOnly={medalOnly} seasonFilter={seasonFilter} {...nmProps(nmAF)} />
                     </Col>
                   </Row>
                 </>

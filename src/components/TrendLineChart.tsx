@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { THEME, applyTooltipStyle, styleAxis, addGrid } from "./charttheme";
+import { useAltTextVisibility } from "./AltTextContext";
 
 export interface YearlyIMC {
   year: number;
@@ -13,9 +14,33 @@ interface TrendLineChartProps {
   sport: string;
 }
 
+function buildTrendLineAltText(data: YearlyIMC[], country: string, sport: string) {
+    if (!data.length) {
+        return `Courbe d'évolution de l'IMC ajusté par l'âge pour ${country} en ${sport}. Aucune donnée disponible.`;
+    }
+
+    const sorted = [...data].sort((a, b) => a.year - b.year);
+    const first = sorted[0];
+    const last = sorted[sorted.length - 1];
+    const delta = last.imc - first.imc;
+    const imcMin = d3.min(sorted, (d) => d.imc)?.toFixed(3);
+    const imcMax = d3.max(sorted, (d) => d.imc)?.toFixed(3);
+    const trend = delta > 0.01 ? "une tendance à la hausse" : delta < -0.01 ? "une tendance à la baisse" : "une tendance stable";
+
+    return [
+        `Courbe d'évolution de l'IMC ajusté par l'âge pour ${country} en ${sport}.`,
+        `Période couverte : de ${first.year} à ${last.year}, soit ${sorted.length} éditions des Jeux olympiques.`,
+        `L'IMC ajusté passe de ${first.imc.toFixed(3)} à ${last.imc.toFixed(3)}, une variation de ${delta >= 0 ? "+" : ""}${delta.toFixed(3)}.`,
+        `Les valeurs s'étendent de ${imcMin} (minimum) à ${imcMax} (maximum).`,
+        `La droite de régression en pointillés orange indique ${trend} sur la période.`,
+    ].join(" ");
+}
+
 const TrendLineChart = ({ data, country, sport }: TrendLineChartProps) => {
   const svgRef     = useRef<SVGSVGElement | null>(null);
   const tooltipRef = useRef<d3.Selection<HTMLDivElement, unknown, HTMLElement, any> | null>(null);
+  const { showAltText } = useAltTextVisibility();
+  const altText = buildTrendLineAltText(data, country, sport);
 
   useEffect(() => {
     tooltipRef.current = applyTooltipStyle(d3.select("body").append("div"));
@@ -173,7 +198,15 @@ const TrendLineChart = ({ data, country, sport }: TrendLineChartProps) => {
     });
   }, [data, country, sport]);
 
-  return <svg ref={svgRef} style={{ display: "block", width: "100%" }} />;
+  return (
+    <figure className="chart-with-alt">
+      <svg
+        ref={svgRef}
+        style={{ display: "block", width: "100%" }}
+      />
+      {showAltText && <figcaption className="chart-alt-text">{altText}</figcaption>}
+    </figure>
+  );
 };
 
 export default TrendLineChart;

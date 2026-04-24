@@ -165,6 +165,7 @@ const Nations = () => {
                   data={bubbleData}
                   highlightSport={selectedSport?.value || null}
                   highlightCountry={selectedCountry?.value || null}
+                  sexFilter={sexFilter}
                 />
               )}
             </div>

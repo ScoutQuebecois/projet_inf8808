@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { THEME, applyTooltipStyle, styleAxis, addGrid } from "./charttheme";
+import { useAltTextVisibility } from "./AltTextContext";
 
 export interface BubbleData {
   country: string;
@@ -16,11 +17,58 @@ interface ScatterPlotProps {
   data: BubbleData[];
   highlightSport: string | null;
   highlightCountry: string | null;
+  sexFilter?: string;
 }
 
-const ScatterPlot = ({ data, highlightSport, highlightCountry }: ScatterPlotProps) => {
+function buildScatterPlotAltText(
+  data: BubbleData[],
+  highlightSport: string | null,
+  highlightCountry: string | null,
+  sexFilter?: string,
+) {
+  if (!data.length) {
+    return "Nuage de points taille-poids des athlètes médaillés. Aucune donnée disponible.";
+  }
+
+  const heightMin = d3.min(data, (d) => d.avgHeight)?.toFixed(1);
+  const heightMax = d3.max(data, (d) => d.avgHeight)?.toFixed(1);
+  const weightMin = d3.min(data, (d) => d.avgWeight)?.toFixed(1);
+  const weightMax = d3.max(data, (d) => d.avgWeight)?.toFixed(1);
+
+  const topMedalists = [...data]
+    .sort((a, b) => b.medalCount - a.medalCount)
+    .slice(0, 3)
+    .map((d) => `${d.country} en ${d.sport} (${d.medalCount} médaille${d.medalCount > 1 ? "s" : ""})`);
+
+  const sexLabel =
+    sexFilter === "M" ? "hommes uniquement"
+    : sexFilter === "F" ? "femmes uniquement"
+    : "tous sexes confondus";
+
+  const parts = [
+    `Nuage de points comparant la taille et le poids moyens de ${data.length} groupes pays-sport parmi les athlètes médaillés (${sexLabel}).`,
+    `La taille moyenne varie de ${heightMin}\u00a0cm à ${heightMax}\u00a0cm.`,
+    `Le poids moyen varie de ${weightMin}\u00a0kg à ${weightMax}\u00a0kg.`,
+    `La taille des bulles est proportionnelle au nombre de médailles. Les bulles bleues indiquent le sport dominant de chaque nation.`,
+    `Groupes les plus médaillés : ${topMedalists.join(", ")}.`,
+  ];
+
+  if (highlightCountry && highlightSport) {
+    parts.push(`Filtres actifs : pays ${highlightCountry} et sport ${highlightSport}. Les autres groupes sont estompés.`);
+  } else if (highlightCountry) {
+    parts.push(`Filtre actif : pays ${highlightCountry}. Les autres groupes sont estompés.`);
+  } else if (highlightSport) {
+    parts.push(`Filtre actif : sport ${highlightSport}. Les autres groupes sont estompés.`);
+  }
+
+  return parts.join(" ");
+}
+
+const ScatterPlot = ({ data, highlightSport, highlightCountry, sexFilter }: ScatterPlotProps) => {
   const svgRef     = useRef<SVGSVGElement | null>(null);
   const tooltipRef = useRef<d3.Selection<HTMLDivElement, unknown, HTMLElement, any> | null>(null);
+  const { showAltText } = useAltTextVisibility();
+  const altText = buildScatterPlotAltText(data, highlightSport, highlightCountry, sexFilter);
 
   useEffect(() => {
     tooltipRef.current = applyTooltipStyle(d3.select("body").append("div"));
@@ -217,7 +265,15 @@ const ScatterPlot = ({ data, highlightSport, highlightCountry }: ScatterPlotProp
     });
   }, [data, highlightSport, highlightCountry]);
 
-  return <svg ref={svgRef} style={{ display: "block", width: "100%" }} />;
+  return (
+    <figure className="chart-with-alt">
+      <svg
+        ref={svgRef}
+        style={{ display: "block", width: "100%" }}
+      />
+      {showAltText && <figcaption className="chart-alt-text">{altText}</figcaption>}
+    </figure>
+  );
 };
 
 export default ScatterPlot;

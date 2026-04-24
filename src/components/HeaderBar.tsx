@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import OlympicLogo from "./OlympicLogo";
+import { useAltTextVisibility } from "./AltTextContext";
 
 const links = [
   { to: "/", label: "Évolution" },
@@ -11,6 +12,7 @@ const links = [
 
 const HeaderBar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { showAltText, setShowAltText } = useAltTextVisibility();
 
   return (
     <nav className="oly-nav" aria-label="Navigation principale">
@@ -36,6 +38,14 @@ const HeaderBar = () => {
         </button>
 
         <div className={`nav-links ${isOpen ? "open" : ""}`}>
+          <label className="nav-alt-toggle">
+            <input
+              type="checkbox"
+              checked={showAltText}
+              onChange={(event) => setShowAltText(event.target.checked)}
+            />
+            <span>Alt text</span>
+          </label>
           {links.map((link) => (
             <NavLink
               key={link.to}
